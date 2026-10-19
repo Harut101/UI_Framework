@@ -1,0 +1,68 @@
+{
+  "id": "remote-tenant",
+  "type": "stack",
+  "props": {
+    "gap": 20
+  },
+  "children": [
+    {
+      "id": "tenant-title",
+      "type": "title",
+      "props": {
+        "value": "Microsoft 365",
+        "level": 2
+      }
+    },
+    {
+      "id": "tenant-summary",
+      "type": "text",
+      "props": {
+        "value": "Northwind tenant · 2,438 licensed users · West Europe"
+      }
+    },
+    {
+      "id": "tenant-settings",
+      "type": "card",
+      "props": {
+        "title": "Tenant settings",
+        "description": "A remote form bound to the current view."
+      },
+      "children": [
+        {
+          "id": "tenant-alias",
+          "type": "text-input",
+          "props": {
+            "label": "Tenant alias"
+          },
+          "bindings": {
+            "value": "$state.tenantAlias"
+          },
+          "handlers": {
+            "onChange": {
+              "action": "setTenantAlias"
+            }
+          }
+        },
+        {
+          "id": "tenant-region",
+          "type": "text",
+          "props": {
+            "value": "Primary region: West Europe · Sync healthy"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tenant-save",
+      "type": "button",
+      "props": {
+        "label": "Save tenant settings"
+      },
+      "handlers": {
+        "onClick": {
+          "action": "confirmObjectAction"
+        }
+      }
+    }
+  ]
+}

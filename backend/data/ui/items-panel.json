@@ -1,0 +1,49 @@
+{
+  "type": "fragment",
+  "id": "items-panel",
+  "state": { "query": "", "selectedId": null, "failRequests": false, "slowRequests": false, "showAdvanced": false },
+  "dataSources": {
+    "items": {
+      "type": "api",
+      "request": {
+        "method": "GET", "path": "/api/items",
+        "query": { "search": "$state.query", "fail": "$state.failRequests", "slow": "$state.slowRequests" }
+      },
+      "dependsOn": ["$state.query", "$state.failRequests", "$state.slowRequests"],
+      "load": { "strategy": "onInit", "reload": "onDependencyChange", "debounceMs": 180 }
+    }
+  },
+  "actions": {
+    "setQuery": { "type": "state.set", "target": "query", "value": "$event.value" },
+    "selectItem": { "type": "state.set", "target": "selectedId", "value": "$event.value" },
+    "setFailure": { "type": "state.set", "target": "failRequests", "value": "$event.value" },
+    "setSlowRequests": { "type": "state.set", "target": "slowRequests", "value": "$event.value" },
+    "toggleAdvanced": { "type": "state.set", "target": "showAdvanced", "value": "$event.value" },
+    "reloadItems": { "type": "datasource.reload", "source": "items" }
+  },
+  "root": {
+    "type": "stack", "props": { "gap": 14, "className": "items-fragment" },
+    "children": [
+      { "type": "text", "props": { "value": "Local state, actions and items datasource. Select an item to load a nested fragment." } },
+      { "type": "search-input", "props": { "label": "Search fragment items", "placeholder": "Search this instance…" }, "bindings": { "value": "$state.query" }, "handlers": { "onChange": { "action": "setQuery" } } },
+      { "type": "row", "props": { "gap": 10 }, "children": [
+        { "type": "switch", "props": { "label": "Fail requests" }, "bindings": { "checked": "$state.failRequests" }, "handlers": { "onChange": { "action": "setFailure" } } },
+        { "type": "switch", "props": { "label": "Slow requests" }, "bindings": { "checked": "$state.slowRequests" }, "handlers": { "onChange": { "action": "setSlowRequests" } } },
+        { "type": "switch", "props": { "label": "Advanced options" }, "bindings": { "checked": "$state.showAdvanced" }, "handlers": { "onChange": { "action": "toggleAdvanced" } } }
+      ] },
+      { "type": "card", "visibility": "$state.showAdvanced", "props": { "title": "Fragment-local advanced UI", "description": "This visibility condition reads only this instance. Slow mode takes 1.2 seconds; typing again cancels its previous request." } },
+      { "type": "row", "props": { "justify": "between" }, "children": [
+        { "type": "button", "props": { "label": "Reload items", "variant": "secondary" }, "handlers": { "onClick": { "action": "reloadItems" } } },
+        { "type": "text", "bindings": { "value": { "source": "$data.items.data.summary", "default": "Waiting for items…" } } },
+        { "type": "text", "bindings": { "value": "$data.items.status" } }
+      ] },
+      { "type": "error-message", "visibility": "$data.items.error", "bindings": { "text": "$data.items.error" }, "handlers": { "onRetry": { "action": "reloadItems" } } },
+      { "type": "generic-list", "props": { "label": "Fragment items", "emptyMessage": "No fragment items match your search." }, "bindings": {
+        "items": { "source": "$data.items.data.items", "default": [] }, "selectedId": "$state.selectedId", "loading": "$data.items.loading"
+      }, "handlers": { "onSelect": { "action": "selectItem" } } },
+      { "type": "schema-outlet", "enabled": "$state.selectedId", "key": "$state.selectedId", "source": {
+        "request": { "method": "GET", "path": "/api/ui/fragments/item-note/$state.selectedId" }, "definitionCache": "view"
+      } }
+    ]
+  }
+}

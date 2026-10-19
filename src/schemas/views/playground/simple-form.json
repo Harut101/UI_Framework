@@ -1,0 +1,24 @@
+{
+  "id": "simple-form",
+  "title": "Simple form",
+  "initialState": { "profile": { "name": "Jamie Davis", "team": "finance", "notifications": true }, "submitted": false },
+  "dataSources": {},
+  "actions": {
+    "setName": { "type": "state.set", "target": "profile.name", "value": "$event.value" },
+    "setTeam": { "type": "state.set", "target": "profile.team", "value": "$event.value" },
+    "setNotifications": { "type": "state.set", "target": "profile.notifications", "value": "$event.value" },
+    "saveProfile": { "type": "state.set", "target": "submitted", "value": true }
+  },
+  "root": { "id": "form-page", "type": "page", "children": [
+    { "id": "form-heading", "type": "page-header", "props": { "title": "Workspace profile", "description": "Ordinary inputs, connected through schema." } },
+    { "id": "profile-card", "type": "card", "props": { "title": "Profile details" }, "children": [
+      { "id": "form-fields", "type": "stack", "props": { "gap": 20 }, "children": [
+        { "id": "name-input", "type": "text-input", "props": { "label": "Display name" }, "bindings": { "value": { "source": "$state.profile.name", "default": "" } }, "handlers": { "onChange": { "action": "setName" } } },
+        { "id": "team-select", "type": "select", "props": { "label": "Team", "options": [{ "value": "finance", "label": "Finance" }, { "value": "sales", "label": "Sales" }, { "value": "marketing", "label": "Marketing" }] }, "bindings": { "value": { "source": "$state.profile.team", "default": "finance" } }, "handlers": { "onChange": { "action": "setTeam" } } },
+        { "id": "notifications", "type": "switch", "props": { "label": "Email notifications" }, "bindings": { "checked": "$state.profile.notifications" }, "handlers": { "onChange": { "action": "setNotifications" } } }
+      ] }
+    ] },
+    { "id": "save-profile", "type": "button", "props": { "label": "Save profile" }, "handlers": { "onClick": { "action": "saveProfile" } } },
+    { "id": "saved-message", "type": "text", "visibility": "$state.submitted", "props": { "value": "Profile saved in view state.", "className": "ui-muted" } }
+  ] }
+}

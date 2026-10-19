@@ -1,0 +1,666 @@
+{
+  "id": "users.catalog",
+  "title": "Users catalog",
+  "initialState": {
+    "filters": {
+      "department": "",
+      "status": "",
+      "search": ""
+    },
+    "selectedUserId": "",
+    "selectedUser": null,
+    "ui": {
+      "profileOpen": false
+    },
+    "selectedObjectId": null,
+    "detailsOpened": false,
+    "tenantAlias": "northwind.onmicrosoft.com",
+    "activeTab": "overview",
+    "itemsDemoOpened": false,
+    "itemsDemoContext": "workspace"
+  },
+  "dataSources": {
+    "users": {
+      "type": "api",
+      "request": {
+        "method": "GET",
+        "path": "/api/users",
+        "query": {
+          "department": "$state.filters.department",
+          "status": "$state.filters.status",
+          "search": "$state.filters.search"
+        }
+      },
+      "dependsOn": [
+        "$state.filters.department",
+        "$state.filters.status",
+        "$state.filters.search"
+      ],
+      "load": {
+        "strategy": "onViewInit",
+        "reload": "onDependencyChange",
+        "debounceMs": 180
+      }
+    }
+  },
+  "actions": {
+    "selectDepartment": {
+      "type": "state.set",
+      "target": "filters.department",
+      "value": "$event.value"
+    },
+    "selectStatus": {
+      "type": "state.patch",
+      "target": "filters",
+      "value": {
+        "status": "$event.value",
+        "department": ""
+      }
+    },
+    "setStatus": {
+      "type": "state.set",
+      "target": "filters.status",
+      "value": "$event.value"
+    },
+    "setSearch": {
+      "type": "state.set",
+      "target": "filters.search",
+      "value": "$event.value"
+    },
+    "clearFilters": {
+      "type": "state.patch",
+      "target": "filters",
+      "value": {
+        "department": "",
+        "status": "",
+        "search": ""
+      }
+    },
+    "reloadUsers": {
+      "type": "datasource.reload",
+      "source": "users"
+    },
+    "captureUser": {
+      "type": "state.patch",
+      "value": {
+        "selectedUserId": "$event.value",
+        "selectedUser": "$event.user"
+      }
+    },
+    "showProfile": {
+      "type": "state.set",
+      "target": "ui.profileOpen",
+      "value": true
+    },
+    "closeProfile": {
+      "type": "state.set",
+      "target": "ui.profileOpen",
+      "value": false
+    },
+    "selectUser": {
+      "type": "sequence",
+      "actions": [
+        "captureUser",
+        "showProfile"
+      ]
+    },
+    "selectObject": {
+      "type": "state.set",
+      "target": "selectedObjectId",
+      "value": "$event.value"
+    },
+    "openDetailsPanel": {
+      "type": "state.set",
+      "target": "detailsOpened",
+      "value": true
+    },
+    "openObjectDetails": {
+      "type": "sequence",
+      "actions": [
+        "selectObject",
+        "openDetailsPanel"
+      ]
+    },
+    "closeObjectDetails": {
+      "type": "state.set",
+      "target": "detailsOpened",
+      "value": false
+    },
+    "setTenantAlias": {
+      "type": "state.set",
+      "target": "tenantAlias",
+      "value": "$event.value"
+    },
+    "selectDetailsTab": {
+      "type": "state.set",
+      "target": "activeTab",
+      "value": "$event.value"
+    },
+    "confirmObjectAction": {
+      "type": "notification.show",
+      "message": "Demo action completed through the owning ViewRuntime",
+      "tone": "success"
+    },
+    "openItemsDemo": {
+      "target": "itemsDemoOpened",
+      "type": "state.set",
+      "value": true
+    },
+    "closeItemsDemo": {
+      "target": "itemsDemoOpened",
+      "type": "state.set",
+      "value": false
+    },
+    "setItemsDemoContext": {
+      "target": "itemsDemoContext",
+      "type": "state.set",
+      "value": "$event.value"
+    }
+  },
+  "root": {
+    "id": "users-page",
+    "type": "stack",
+    "props": {
+      "className": "report-catalog users-catalog",
+      "gap": 14
+    },
+    "children": [
+      {
+        "id": "users-heading",
+        "type": "page-header",
+        "props": {
+          "title": "Browse all users"
+        },
+        "bindings": {
+          "description": {
+            "source": "$data.users.data.subtitle",
+            "default": "Loading the user directory…"
+          }
+        }
+      },
+      {
+        "id": "fragment-demo-launcher",
+        "type": "card",
+        "props": {
+          "title": "Full dynamic fragments",
+          "description": "Open two independent instances of one HTTP-loaded schema. Each owns its state, actions, datasource and nested fragments."
+        },
+        "children": [
+          {
+            "id": "fragment-demo-open",
+            "type": "button",
+            "props": {
+              "label": "Open fragment workbench",
+              "variant": "secondary"
+            },
+            "handlers": {
+              "onClick": {
+                "action": "openItemsDemo"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "dynamic-objects-card",
+        "type": "card",
+        "props": {
+          "title": "Dynamic object details",
+          "description": "Select an object. The backend decides which component tree appears."
+        },
+        "children": [
+          {
+            "id": "dynamic-objects",
+            "type": "generic-list",
+            "props": {
+              "label": "Demo objects",
+              "items": [
+                {
+                  "id": "microsoft-365",
+                  "title": "Microsoft 365",
+                  "description": "Tenant settings · remote form"
+                },
+                {
+                  "id": "active-directory",
+                  "title": "Active Directory",
+                  "description": "Directory health · remote tabs"
+                },
+                {
+                  "id": "configuration",
+                  "title": "Configuration",
+                  "description": "Policy summary · remote cards"
+                }
+              ]
+            },
+            "bindings": {
+              "selectedId": "$state.selectedObjectId"
+            },
+            "handlers": {
+              "onSelect": {
+                "action": "openObjectDetails"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "users-filters",
+        "type": "row",
+        "props": {
+          "className": "catalog-filter-bar",
+          "gap": 8
+        },
+        "children": [
+          {
+            "id": "users-search",
+            "type": "search-input",
+            "props": {
+              "label": "Search users",
+              "placeholder": "Search name, email, or role"
+            },
+            "bindings": {
+              "value": "$state.filters.search"
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setSearch"
+              },
+              "onSearch": {
+                "action": "reloadUsers"
+              }
+            }
+          },
+          {
+            "id": "department-filter",
+            "type": "select",
+            "props": {
+              "label": "Department",
+              "options": []
+            },
+            "bindings": {
+              "value": "$state.filters.department",
+              "options": {
+                "source": "$data.users.data.departmentOptions",
+                "default": []
+              }
+            },
+            "handlers": {
+              "onChange": {
+                "action": "selectDepartment"
+              }
+            }
+          },
+          {
+            "id": "status-filter",
+            "type": "select",
+            "props": {
+              "label": "Account status",
+              "options": []
+            },
+            "bindings": {
+              "value": "$state.filters.status",
+              "options": {
+                "source": "$data.users.data.statusOptions",
+                "default": []
+              }
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setStatus"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "users-options",
+        "type": "row",
+        "props": {
+          "className": "catalog-filter-options",
+          "justify": "between"
+        },
+        "children": [
+          {
+            "id": "users-context",
+            "type": "text",
+            "props": {
+              "value": "A shared navigation component, wired to people instead of reports.",
+              "className": "users-context"
+            }
+          },
+          {
+            "id": "clear-users-filters",
+            "type": "button",
+            "props": {
+              "label": "Clear user filters",
+              "variant": "ghost"
+            },
+            "handlers": {
+              "onClick": {
+                "action": "clearFilters"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "users-layout",
+        "type": "catalog-layout",
+        "children": [
+          {
+            "id": "user-facets",
+            "type": "stack",
+            "props": {
+              "className": "catalog-facets user-facets",
+              "gap": 14
+            },
+            "children": [
+              {
+                "id": "department-heading",
+                "type": "title",
+                "props": {
+                  "value": "BY DEPARTMENT",
+                  "level": 4
+                }
+              },
+              {
+                "id": "department-navigation",
+                "type": "generic-navigation",
+                "props": {
+                  "label": "By department"
+                },
+                "bindings": {
+                  "items": {
+                    "source": "$data.users.data.departments",
+                    "default": []
+                  },
+                  "selectedId": "$state.filters.department"
+                },
+                "handlers": {
+                  "onSelect": {
+                    "action": "selectDepartment"
+                  }
+                }
+              },
+              {
+                "id": "user-status-heading",
+                "type": "title",
+                "props": {
+                  "value": "ACCOUNT STATUS",
+                  "level": 4
+                }
+              },
+              {
+                "id": "status-navigation",
+                "type": "generic-navigation",
+                "props": {
+                  "label": "By account status"
+                },
+                "bindings": {
+                  "items": {
+                    "source": "$data.users.data.statuses",
+                    "default": []
+                  },
+                  "selectedId": "$state.filters.status"
+                },
+                "handlers": {
+                  "onSelect": {
+                    "action": "selectStatus"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "users-results",
+            "type": "stack",
+            "props": {
+              "className": "catalog-results",
+              "gap": 12
+            },
+            "children": [
+              {
+                "id": "users-list",
+                "type": "user-list",
+                "bindings": {
+                  "items": {
+                    "source": "$data.users.data.items",
+                    "default": []
+                  },
+                  "loading": "$data.users.loading",
+                  "error": "$data.users.error",
+                  "selectedId": "$state.selectedUserId"
+                },
+                "handlers": {
+                  "onSelect": {
+                    "action": "selectUser"
+                  },
+                  "onRetry": {
+                    "action": "reloadUsers"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "user-profile",
+        "type": "side-panel",
+        "props": {
+          "title": "User profile"
+        },
+        "bindings": {
+          "open": "$state.ui.profileOpen",
+          "description": "$state.selectedUser.name"
+        },
+        "handlers": {
+          "onClose": {
+            "action": "closeProfile"
+          }
+        },
+        "children": [
+          {
+            "id": "profile-content",
+            "type": "stack",
+            "props": {
+              "gap": 8
+            },
+            "children": [
+              {
+                "id": "profile-role",
+                "type": "text",
+                "bindings": {
+                  "value": "$state.selectedUser.role"
+                }
+              },
+              {
+                "id": "profile-email",
+                "type": "text",
+                "bindings": {
+                  "value": "$state.selectedUser.email"
+                }
+              },
+              {
+                "id": "profile-department",
+                "type": "text",
+                "bindings": {
+                  "value": "$state.selectedUser.department"
+                }
+              },
+              {
+                "id": "profile-status",
+                "type": "text",
+                "bindings": {
+                  "value": "$state.selectedUser.status"
+                }
+              },
+              {
+                "id": "profile-location",
+                "type": "text",
+                "bindings": {
+                  "value": "$state.selectedUser.location"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dynamic-object-panel",
+        "type": "side-panel",
+        "props": {
+          "title": "Dynamic object details",
+          "description": "Content supplied by a remote ComponentDefinition"
+        },
+        "bindings": {
+          "open": "$state.detailsOpened"
+        },
+        "handlers": {
+          "onClose": {
+            "action": "closeObjectDetails"
+          }
+        },
+        "children": [
+          {
+            "id": "object-details-outlet",
+            "type": "schema-outlet",
+            "source": "objectDetailsPanel",
+            "enabled": "$state.detailsOpened",
+            "key": "$state.selectedObjectId",
+            "loading": {
+              "id": "object-details-loading",
+              "type": "spinner",
+              "props": {
+                "label": "Loading panel schema…"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "fragment-demo-panel",
+        "type": "side-panel",
+        "props": {
+          "title": "Dynamic fragment workbench",
+          "description": "Same cached definition, independent scopes. Change one instance and compare the other. Closing disposes both and any nested children.",
+          "size": "wide"
+        },
+        "bindings": {
+          "open": "$state.itemsDemoOpened"
+        },
+        "handlers": {
+          "onClose": {
+            "action": "closeItemsDemo"
+          }
+        },
+        "children": [
+          {
+            "id": "fragment-demo-context",
+            "type": "select",
+            "props": {
+              "label": "Fragment context",
+              "options": [
+                {
+                  "value": "workspace",
+                  "label": "Workspace"
+                },
+                {
+                  "value": "finance",
+                  "label": "Finance"
+                },
+                {
+                  "value": "operations",
+                  "label": "Operations"
+                }
+              ]
+            },
+            "bindings": {
+              "value": "$state.itemsDemoContext"
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setItemsDemoContext"
+              }
+            }
+          },
+          {
+            "id": "fragment-demo-instances",
+            "type": "row",
+            "props": {
+              "className": "fragment-demo-columns",
+              "align": "stretch",
+              "gap": 16
+            },
+            "children": [
+              {
+                "id": "fragment-demo-left",
+                "type": "card",
+                "props": {
+                  "title": "Instance A",
+                  "description": "Edit this instance; B remains unchanged.",
+                  "className": "fragment-demo-instance"
+                },
+                "children": [
+                  {
+                    "id": "fragment-demo-left-outlet",
+                    "type": "schema-outlet",
+                    "key": "$state.itemsDemoContext",
+                    "source": {
+                      "request": {
+                        "method": "GET",
+                        "path": "/api/ui/fragments/items-panel/$state.itemsDemoContext"
+                      },
+                      "definitionCache": "view"
+                    },
+                    "lifecycle": {
+                      "scopeLifetime": "activation"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "fragment-demo-right",
+                "type": "card",
+                "props": {
+                  "title": "Instance B",
+                  "description": "An independent local state and items datasource.",
+                  "className": "fragment-demo-instance"
+                },
+                "children": [
+                  {
+                    "id": "fragment-demo-right-outlet",
+                    "type": "schema-outlet",
+                    "key": "$state.itemsDemoContext",
+                    "source": {
+                      "request": {
+                        "method": "GET",
+                        "path": "/api/ui/fragments/items-panel/$state.itemsDemoContext"
+                      },
+                      "definitionCache": "view"
+                    },
+                    "lifecycle": {
+                      "scopeLifetime": "activation"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "schemaSources": {
+    "objectDetailsPanel": {
+      "request": {
+        "method": "GET",
+        "path": "/api/ui/object-details/$state.selectedObjectId"
+      },
+      "load": {
+        "strategy": "onDemand",
+        "cache": "view"
+      }
+    }
+  }
+}

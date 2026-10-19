@@ -1,0 +1,12 @@
+{
+  "id": "playground-application",
+  "initialState": { "name": "Schema Runtime Playground" },
+  "dataSources": {},
+  "actions": {},
+  "shell": {
+    "id": "application-shell",
+    "type": "page",
+    "children": [{ "id": "outlet", "type": "route-outlet" }]
+  },
+  "routes": [{ "path": "/", "viewId": "hello-runtime" }]
+}

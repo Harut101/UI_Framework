@@ -1,0 +1,42 @@
+[
+  {
+    "id": "static",
+    "label": "Static navigation",
+    "links": [
+      {
+        "id": "overview",
+        "name": "Overview",
+        "href": "/application/catalog"
+      }
+    ]
+  },
+  {
+    "id": "tenants",
+    "name": "Microsoft 365",
+    "childLinksSourceUrl": "v0/msGraph/tenants"
+  },
+  {
+    "id": "recovery",
+    "name": "Forest Recovery",
+    "links": [
+      {
+        "id": "overview",
+        "label": "Recovery overview",
+        "href": "/application/catalog"
+      }
+    ],
+    "childrenSource": {
+      "request": {
+        "method": "GET",
+        "path": "/api/v0/recovery/effectiveNavigationProperties"
+      },
+      "itemsPath": "items"
+    },
+    "childrenOrders": [
+      "overview",
+      "jobs",
+      "objects",
+      "plans"
+    ]
+  }
+]

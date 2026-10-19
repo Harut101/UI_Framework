@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "application",
+    "path": "../examples/production/application.json"
+  },
+  {
+    "kind": "view",
+    "path": "../examples/production/view.json"
+  },
+  {
+    "kind": "fragment",
+    "path": "../examples/production/fragment.json"
+  },
+  {
+    "kind": "navigation-data",
+    "path": "../examples/production/navigation-data.json"
+  },
+  {
+    "kind": "view",
+    "path": "../examples/fragment-host.view.json"
+  },
+  {
+    "kind": "fragment",
+    "path": "../examples/items-panel.workspace.fragment.json"
+  }
+]

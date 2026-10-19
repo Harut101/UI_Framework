@@ -1,0 +1,32 @@
+{
+  "id": "nested-layout-demo",
+  "title": "Nested layout demo",
+  "initialState": { "message": "Select a report or refresh the overview.", "selectedReportId": null },
+  "dataSources": {},
+  "actions": {
+    "refreshOverview": { "type": "state.set", "target": "message", "value": "Overview refreshed through a named action." },
+    "openReport": { "type": "sequence", "actions": ["selectReport", "showSelection"] },
+    "selectReport": { "type": "state.set", "target": "selectedReportId", "value": "$event.value" },
+    "showSelection": { "type": "state.set", "target": "message", "value": "$event.value" }
+  },
+  "root": { "id": "overview-page", "type": "page", "children": [
+    { "id": "overview-header", "type": "page-header", "props": { "title": "Workspace overview", "description": "Layouts and domain cards composed through JSON.", "eyebrow": "Acme workspace" }, "children": [
+      { "id": "refresh-overview", "type": "button", "props": { "label": "Refresh overview", "variant": "secondary" }, "handlers": { "onClick": { "action": "refreshOverview" } } }
+    ] },
+    { "id": "overview-split", "type": "split-layout", "props": { "ratio": "wide-left", "gap": 16 }, "children": [
+      { "id": "main-stack", "type": "stack", "props": { "gap": 16 }, "children": [
+        { "id": "activity-card", "type": "card", "props": { "title": "Team activity", "description": "A little context, at a glance." }, "children": [
+          { "id": "activity-text", "type": "text", "props": { "value": "Your workspace is up to date.", "className": "ui-muted" } }
+        ] },
+        { "id": "report-summary", "type": "report-card", "props": { "report": { "id": "report-1", "title": "Revenue overview", "description": "Monthly revenue, growth, and the trends behind the numbers.", "module": "Finance", "status": "published", "updatedAt": "today" } }, "handlers": { "onOpen": { "action": "openReport" } } }
+      ] },
+      { "id": "side-stack", "type": "stack", "props": { "gap": 16 }, "children": [
+        { "id": "user-summary", "type": "user-card", "props": { "user": { "id": "user-1", "name": "Jamie Davis", "role": "Finance lead", "email": "jamie@acme.example", "status": "active", "initials": "JD" } } },
+        { "id": "notes-panel", "type": "side-panel", "props": { "title": "Notes" }, "children": [
+          { "id": "note-text", "type": "text", "props": { "value": "Every child on this page is a registered component.", "className": "ui-muted" } }
+        ] }
+      ] }
+    ] },
+    { "id": "overview-message", "type": "text", "bindings": { "value": "$state.message" }, "props": { "className": "ui-muted" } }
+  ] }
+}

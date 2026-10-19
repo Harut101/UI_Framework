@@ -1,0 +1,6 @@
+import {Disclosure} from '../ui/Disclosure';
+import { Icon } from '../../components/icons';
+import { demoCatalogs, schemaComparisonSections, type DemoCatalogId } from './demoCatalogs';
+export function SchemaComparison({ selectedId }: { selectedId: DemoCatalogId }) {
+  return <Disclosure className="schema-comparison" title={<><Icon name="code" size={15}/><span>Architecture comparison</span><small>Same GenericNavigation · different JSON</small></>}><p>These excerpts come directly from the two view definitions. The selected mode changes the schema loaded by the shared route outlet.</p><div className="schema-comparison-columns">{demoCatalogs.map(catalog => <section key={catalog.id} className={catalog.id === selectedId ? 'selected' : ''} aria-label={`${catalog.label} schema comparison`}><header><strong>{catalog.label}</strong><code>{catalog.definition.id}.json</code><span>{catalog.id === selectedId ? 'ACTIVE SCHEMA' : 'SAME RUNTIME'}</span></header><div className="schema-comparison-code">{schemaComparisonSections(catalog.definition, catalog.navigationId, catalog.listId).map(section => <div key={section.title}><h3>{section.title}</h3><pre>{JSON.stringify(section.value, null, 2)}</pre></div>)}</div></section>)}</div></Disclosure>;
+}

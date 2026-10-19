@@ -1,0 +1,18 @@
+{
+  "id": "visibility-demo",
+  "title": "Visibility demo",
+  "initialState": { "showAdvanced": false, "retention": "30" },
+  "dataSources": {},
+  "actions": {
+    "setShowAdvanced": { "type": "state.set", "target": "showAdvanced", "value": "$event.value" },
+    "setRetention": { "type": "state.set", "target": "retention", "value": "$event.value" }
+  },
+  "root": { "id": "visibility-page", "type": "page", "children": [
+    { "id": "visibility-heading", "type": "page-header", "props": { "title": "Progressive settings", "description": "Visibility follows view state through the binding selector." } },
+    { "id": "advanced-switch", "type": "switch", "props": { "label": "Show advanced settings" }, "bindings": { "checked": "$state.showAdvanced" }, "handlers": { "onChange": { "action": "setShowAdvanced" } } },
+    { "id": "advanced-card", "type": "card", "props": { "title": "Advanced settings", "description": "This section appears when showAdvanced is true." }, "visibility": "$state.showAdvanced", "children": [
+      { "id": "retention-input", "type": "text-input", "props": { "label": "Retention (days)" }, "bindings": { "value": { "source": "$state.retention", "default": "30" } }, "handlers": { "onChange": { "action": "setRetention" } } }
+    ] },
+    { "id": "visibility-note", "type": "text", "props": { "value": "Toggle the switch and watch $state.showAdvanced in the inspector.", "className": "ui-muted" } }
+  ] }
+}

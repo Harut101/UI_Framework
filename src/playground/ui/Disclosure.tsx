@@ -1,0 +1,2 @@
+import {Accordion,AccordionItem,AccordionHeader,AccordionPanel} from '@fluentui/react-components';import type {ReactNode} from 'react';
+export function Disclosure({title,children,className,defaultOpen=false}:{title:ReactNode;children:ReactNode;className?:string;defaultOpen?:boolean}){return <Accordion className={className} collapsible defaultOpenItems={defaultOpen?['content']:[]}><AccordionItem value="content"><AccordionHeader>{title}</AccordionHeader><AccordionPanel>{children}</AccordionPanel></AccordionItem></Accordion>;}

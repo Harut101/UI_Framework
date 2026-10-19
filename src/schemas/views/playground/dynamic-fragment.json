@@ -1,0 +1,149 @@
+{
+  "id": "dynamic-fragment",
+  "title": "Dynamic Fragment",
+  "initialState": {
+    "selectedObjectId": null,
+    "detailsOpened": false,
+    "tenantAlias": "northwind.onmicrosoft.com",
+    "activeTab": "overview"
+  },
+  "dataSources": {},
+  "schemaSources": {
+    "objectDetailsPanel": {
+      "request": {
+        "method": "GET",
+        "path": "/api/ui/object-details/$state.selectedObjectId"
+      },
+      "load": {
+        "strategy": "onDemand",
+        "cache": "view"
+      }
+    }
+  },
+  "actions": {
+    "selectObject": {
+      "type": "state.set",
+      "target": "selectedObjectId",
+      "value": "$event.value"
+    },
+    "openDetailsPanel": {
+      "type": "state.set",
+      "target": "detailsOpened",
+      "value": true
+    },
+    "openObjectDetails": {
+      "type": "sequence",
+      "actions": [
+        "selectObject",
+        "openDetailsPanel"
+      ]
+    },
+    "closeObjectDetails": {
+      "type": "state.set",
+      "target": "detailsOpened",
+      "value": false
+    },
+    "setTenantAlias": {
+      "type": "state.set",
+      "target": "tenantAlias",
+      "value": "$event.value"
+    },
+    "selectDetailsTab": {
+      "type": "state.set",
+      "target": "activeTab",
+      "value": "$event.value"
+    },
+    "confirmObjectAction": {
+      "type": "notification.show",
+      "message": "Demo action completed through the owning ViewRuntime",
+      "tone": "success"
+    }
+  },
+  "root": {
+    "id": "dynamic-page",
+    "type": "page",
+    "children": [
+      {
+        "id": "dynamic-title",
+        "type": "title",
+        "props": {
+          "value": "Dynamic Fragment"
+        }
+      },
+      {
+        "id": "dynamic-objects-card",
+        "type": "card",
+        "props": {
+          "title": "Dynamic object details",
+          "description": "Select an object. The backend decides which component tree appears."
+        },
+        "children": [
+          {
+            "id": "dynamic-objects",
+            "type": "generic-list",
+            "props": {
+              "label": "Demo objects",
+              "items": [
+                {
+                  "id": "microsoft-365",
+                  "title": "Microsoft 365",
+                  "description": "Tenant settings · remote form"
+                },
+                {
+                  "id": "active-directory",
+                  "title": "Active Directory",
+                  "description": "Directory health · remote tabs"
+                },
+                {
+                  "id": "configuration",
+                  "title": "Configuration",
+                  "description": "Policy summary · remote cards"
+                }
+              ]
+            },
+            "bindings": {
+              "selectedId": "$state.selectedObjectId"
+            },
+            "handlers": {
+              "onSelect": {
+                "action": "openObjectDetails"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "dynamic-object-panel",
+        "type": "side-panel",
+        "props": {
+          "title": "Dynamic object details",
+          "description": "Content supplied by a remote ComponentDefinition"
+        },
+        "bindings": {
+          "open": "$state.detailsOpened"
+        },
+        "handlers": {
+          "onClose": {
+            "action": "closeObjectDetails"
+          }
+        },
+        "children": [
+          {
+            "id": "object-details-outlet",
+            "type": "schema-outlet",
+            "source": "objectDetailsPanel",
+            "enabled": "$state.detailsOpened",
+            "key": "$state.selectedObjectId",
+            "loading": {
+              "id": "object-details-loading",
+              "type": "spinner",
+              "props": {
+                "label": "Loading panel schema…"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

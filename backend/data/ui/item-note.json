@@ -1,0 +1,14 @@
+{
+  "type": "fragment",
+  "id": "item-note",
+  "state": { "note": "", "pinned": false },
+  "actions": {
+    "setNote": { "type": "state.set", "target": "note", "value": "$event.value" },
+    "setPinned": { "type": "state.set", "target": "pinned", "value": "$event.value" }
+  },
+  "root": { "type": "card", "props": { "title": "Nested item notes", "description": "Another HTTP-loaded fragment with its own state and actions." }, "children": [
+    { "type": "text-input", "props": { "label": "Local note", "placeholder": "Only this nested instance…" }, "bindings": { "value": "$state.note" }, "handlers": { "onChange": { "action": "setNote" } } },
+    { "type": "switch", "props": { "label": "Pin note" }, "bindings": { "checked": "$state.pinned" }, "handlers": { "onChange": { "action": "setPinned" } } },
+    { "type": "text", "visibility": "$state.pinned", "props": { "value": "This note is pinned in its local fragment scope." } }
+  ] }
+}

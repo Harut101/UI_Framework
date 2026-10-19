@@ -1,0 +1,85 @@
+{
+  "id": "remote-directory",
+  "type": "stack",
+  "props": {
+    "gap": 20
+  },
+  "children": [
+    {
+      "id": "directory-title",
+      "type": "title",
+      "props": {
+        "value": "Active Directory",
+        "level": 2
+      }
+    },
+    {
+      "id": "directory-warning",
+      "type": "warning-banner",
+      "props": {
+        "text": "Replication health requires attention on DC-LON-02."
+      }
+    },
+    {
+      "id": "directory-tabs",
+      "type": "tabs",
+      "props": {
+        "items": [
+          {
+            "id": "overview",
+            "label": "Overview"
+          },
+          {
+            "id": "domains",
+            "label": "Domains"
+          },
+          {
+            "id": "controllers",
+            "label": "Controllers"
+          }
+        ]
+      },
+      "bindings": {
+        "selectedId": "$state.activeTab"
+      },
+      "handlers": {
+        "onSelect": {
+          "action": "selectDetailsTab"
+        }
+      }
+    },
+    {
+      "id": "directory-tab-caption",
+      "type": "text",
+      "props": {
+        "value": "Selected section:"
+      }
+    },
+    {
+      "id": "directory-current-tab",
+      "type": "text",
+      "bindings": {
+        "value": "$state.activeTab"
+      }
+    },
+    {
+      "id": "directory-overview",
+      "type": "text",
+      "props": {
+        "value": "northwind.local · 3 domains · 12 domain controllers"
+      }
+    },
+    {
+      "id": "directory-check",
+      "type": "button",
+      "props": {
+        "label": "Run health check"
+      },
+      "handlers": {
+        "onClick": {
+          "action": "confirmObjectAction"
+        }
+      }
+    }
+  ]
+}

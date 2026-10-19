@@ -1,0 +1,962 @@
+{
+  "id": "reporting.catalog",
+  "title": "Reports catalog",
+  "initialState": {
+    "filters": {
+      "search": "",
+      "module": "",
+      "framework": "",
+      "type": "",
+      "collection": "all",
+      "owner": "",
+      "publishedOnly": false
+    },
+    "ui": {
+      "showAdvancedFilters": false,
+      "detailsOpen": false,
+      "running": false
+    },
+    "selectedReportId": "",
+    "lastRun": null,
+    "selectedObjectId": null,
+    "detailsOpened": false,
+    "tenantAlias": "northwind.onmicrosoft.com",
+    "activeTab": "overview",
+    "itemsDemoOpened": false,
+    "itemsDemoContext": "workspace"
+  },
+  "dataSources": {
+    "facets": {
+      "type": "api",
+      "request": {
+        "method": "GET",
+        "path": "/api/report-facets"
+      },
+      "load": {
+        "strategy": "onViewInit"
+      }
+    },
+    "reports": {
+      "type": "api",
+      "request": {
+        "method": "GET",
+        "path": "/api/reports",
+        "query": {
+          "search": "$state.filters.search",
+          "module": "$state.filters.module",
+          "framework": "$state.filters.framework",
+          "type": "$state.filters.type",
+          "collection": "$state.filters.collection",
+          "owner": "$state.filters.owner",
+          "publishedOnly": "$state.filters.publishedOnly"
+        }
+      },
+      "dependsOn": [
+        "$state.filters.search",
+        "$state.filters.module",
+        "$state.filters.framework",
+        "$state.filters.type",
+        "$state.filters.collection",
+        "$state.filters.owner",
+        "$state.filters.publishedOnly"
+      ],
+      "load": {
+        "strategy": "onViewInit",
+        "reload": "onDependencyChange",
+        "debounceMs": 180
+      }
+    },
+    "selectedReport": {
+      "type": "api",
+      "request": {
+        "method": "GET",
+        "path": "/api/reports/{id}",
+        "params": {
+          "id": "$state.selectedReportId"
+        }
+      },
+      "load": {
+        "strategy": "manual"
+      }
+    }
+  },
+  "actions": {
+    "setSearch": {
+      "type": "state.set",
+      "target": "filters.search",
+      "value": "$event.value"
+    },
+    "setFramework": {
+      "type": "state.set",
+      "target": "filters.framework",
+      "value": "$event.value"
+    },
+    "setType": {
+      "type": "state.set",
+      "target": "filters.type",
+      "value": "$event.value"
+    },
+    "setCollection": {
+      "type": "state.set",
+      "target": "filters.collection",
+      "value": "$event.value"
+    },
+    "setOwner": {
+      "type": "state.set",
+      "target": "filters.owner",
+      "value": "$event.value"
+    },
+    "setPublishedOnly": {
+      "type": "state.set",
+      "target": "filters.publishedOnly",
+      "value": "$event.value"
+    },
+    "setAdvancedFilters": {
+      "type": "state.set",
+      "target": "ui.showAdvancedFilters",
+      "value": "$event.value"
+    },
+    "resetFilters": {
+      "type": "state.patch",
+      "target": "filters",
+      "value": {
+        "search": "",
+        "module": "",
+        "framework": "",
+        "type": "",
+        "collection": "all",
+        "owner": "",
+        "publishedOnly": false
+      }
+    },
+    "reloadReports": {
+      "type": "datasource.reload",
+      "source": "reports"
+    },
+    "reloadFacets": {
+      "type": "datasource.reload",
+      "source": "facets"
+    },
+    "selectReport": {
+      "type": "state.set",
+      "target": "selectedReportId",
+      "value": "$event.value"
+    },
+    "showDetails": {
+      "type": "state.set",
+      "target": "ui.detailsOpen",
+      "value": true
+    },
+    "hideDetails": {
+      "type": "state.set",
+      "target": "ui.detailsOpen",
+      "value": false
+    },
+    "clearSelection": {
+      "type": "state.set",
+      "target": "selectedReportId",
+      "value": ""
+    },
+    "clearLastRun": {
+      "type": "state.set",
+      "target": "lastRun",
+      "value": null
+    },
+    "loadSelectedReport": {
+      "type": "datasource.reload",
+      "source": "selectedReport"
+    },
+    "invalidateSelectedReport": {
+      "type": "datasource.invalidate",
+      "source": "selectedReport"
+    },
+    "openReport": {
+      "type": "sequence",
+      "actions": [
+        "clearLastRun",
+        "selectReport",
+        "showDetails",
+        "loadSelectedReport"
+      ]
+    },
+    "closeReport": {
+      "type": "sequence",
+      "actions": [
+        "hideDetails",
+        "invalidateSelectedReport",
+        "clearSelection",
+        "clearLastRun"
+      ]
+    },
+    "beginRun": {
+      "type": "state.set",
+      "target": "ui.running",
+      "value": true
+    },
+    "endRun": {
+      "type": "state.set",
+      "target": "ui.running",
+      "value": false
+    },
+    "showRunSuccess": {
+      "type": "notification.show",
+      "message": "$response.message",
+      "tone": "success"
+    },
+    "showRunError": {
+      "type": "notification.show",
+      "message": "$response.error",
+      "tone": "error"
+    },
+    "runSucceeded": {
+      "type": "sequence",
+      "actions": [
+        "endRun",
+        "showRunSuccess"
+      ]
+    },
+    "runFailed": {
+      "type": "sequence",
+      "actions": [
+        "endRun",
+        "showRunError"
+      ]
+    },
+    "executeReport": {
+      "type": "api.request",
+      "request": {
+        "method": "POST",
+        "path": "/api/reports/{id}/run",
+        "params": {
+          "id": "$state.selectedReportId"
+        }
+      },
+      "target": "lastRun",
+      "onSuccess": "runSucceeded",
+      "onError": "runFailed"
+    },
+    "runReport": {
+      "type": "sequence",
+      "actions": [
+        "beginRun",
+        "executeReport"
+      ]
+    },
+    "selectModule": {
+      "type": "state.set",
+      "target": "filters.module",
+      "value": "$event.value"
+    },
+    "selectObject": {
+      "type": "state.set",
+      "target": "selectedObjectId",
+      "value": "$event.value"
+    },
+    "openDetailsPanel": {
+      "type": "state.set",
+      "target": "detailsOpened",
+      "value": true
+    },
+    "openObjectDetails": {
+      "type": "sequence",
+      "actions": [
+        "selectObject",
+        "openDetailsPanel"
+      ]
+    },
+    "closeObjectDetails": {
+      "type": "state.set",
+      "target": "detailsOpened",
+      "value": false
+    },
+    "setTenantAlias": {
+      "type": "state.set",
+      "target": "tenantAlias",
+      "value": "$event.value"
+    },
+    "selectDetailsTab": {
+      "type": "state.set",
+      "target": "activeTab",
+      "value": "$event.value"
+    },
+    "confirmObjectAction": {
+      "type": "notification.show",
+      "message": "Demo action completed through the owning ViewRuntime",
+      "tone": "success"
+    },
+    "openItemsDemo": {
+      "target": "itemsDemoOpened",
+      "type": "state.set",
+      "value": true
+    },
+    "closeItemsDemo": {
+      "target": "itemsDemoOpened",
+      "type": "state.set",
+      "value": false
+    },
+    "setItemsDemoContext": {
+      "target": "itemsDemoContext",
+      "type": "state.set",
+      "value": "$event.value"
+    }
+  },
+  "root": {
+    "id": "catalog-page",
+    "type": "stack",
+    "props": {
+      "className": "report-catalog",
+      "gap": 14
+    },
+    "children": [
+      {
+        "id": "catalog-heading",
+        "type": "page-header",
+        "props": {
+          "title": "Browse all reports",
+          "description": "Search by name, description, control, or keyword"
+        },
+        "bindings": {
+          "description": {
+            "source": "$data.reports.data.subtitle",
+            "default": "Loading report definitions…"
+          }
+        }
+      },
+      {
+        "id": "fragment-demo-launcher",
+        "type": "card",
+        "props": {
+          "title": "Full dynamic fragments",
+          "description": "Open two independent instances of one HTTP-loaded schema. Each owns its state, actions, datasource and nested fragments."
+        },
+        "children": [
+          {
+            "id": "fragment-demo-open",
+            "type": "button",
+            "props": {
+              "label": "Open fragment workbench",
+              "variant": "secondary"
+            },
+            "handlers": {
+              "onClick": {
+                "action": "openItemsDemo"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "dynamic-objects-card",
+        "type": "card",
+        "props": {
+          "title": "Dynamic object details",
+          "description": "Select an object. The backend decides which component tree appears."
+        },
+        "children": [
+          {
+            "id": "dynamic-objects",
+            "type": "generic-list",
+            "props": {
+              "label": "Demo objects",
+              "items": [
+                {
+                  "id": "microsoft-365",
+                  "title": "Microsoft 365",
+                  "description": "Tenant settings · remote form"
+                },
+                {
+                  "id": "active-directory",
+                  "title": "Active Directory",
+                  "description": "Directory health · remote tabs"
+                },
+                {
+                  "id": "configuration",
+                  "title": "Configuration",
+                  "description": "Policy summary · remote cards"
+                }
+              ]
+            },
+            "bindings": {
+              "selectedId": "$state.selectedObjectId"
+            },
+            "handlers": {
+              "onSelect": {
+                "action": "openObjectDetails"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "catalog-filters",
+        "type": "row",
+        "props": {
+          "className": "catalog-filter-bar",
+          "gap": 8
+        },
+        "children": [
+          {
+            "id": "report-search",
+            "type": "search-input",
+            "props": {
+              "label": "Search reports",
+              "placeholder": "Search reports"
+            },
+            "bindings": {
+              "value": {
+                "source": "$state.filters.search",
+                "default": ""
+              }
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setSearch"
+              },
+              "onSearch": {
+                "action": "reloadReports"
+              }
+            }
+          },
+          {
+            "id": "module-filter",
+            "type": "select",
+            "props": {
+              "label": "Module",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Loading options…"
+                }
+              ]
+            },
+            "bindings": {
+              "value": "$state.filters.module",
+              "options": {
+                "source": "$data.facets.data.moduleOptions",
+                "default": []
+              }
+            },
+            "handlers": {
+              "onChange": {
+                "action": "selectModule"
+              }
+            }
+          },
+          {
+            "id": "framework-filter",
+            "type": "select",
+            "props": {
+              "label": "Compliance framework",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Loading options…"
+                }
+              ]
+            },
+            "bindings": {
+              "value": "$state.filters.framework",
+              "options": {
+                "source": "$data.facets.data.frameworkOptions",
+                "default": []
+              }
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setFramework"
+              }
+            }
+          },
+          {
+            "id": "type-filter",
+            "type": "select",
+            "props": {
+              "label": "Report type",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Loading options…"
+                }
+              ]
+            },
+            "bindings": {
+              "value": "$state.filters.type",
+              "options": {
+                "source": "$data.facets.data.typeOptions",
+                "default": []
+              }
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setType"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "filter-options",
+        "type": "row",
+        "props": {
+          "className": "catalog-filter-options",
+          "justify": "between",
+          "gap": 10
+        },
+        "children": [
+          {
+            "id": "advanced-toggle",
+            "type": "switch",
+            "props": {
+              "label": "Advanced filters"
+            },
+            "bindings": {
+              "checked": "$state.ui.showAdvancedFilters"
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setAdvancedFilters"
+              }
+            }
+          },
+          {
+            "id": "reset-filters",
+            "type": "button",
+            "props": {
+              "label": "Clear filters",
+              "variant": "ghost"
+            },
+            "handlers": {
+              "onClick": {
+                "action": "resetFilters"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "advanced-filters",
+        "type": "row",
+        "props": {
+          "className": "catalog-advanced-filters",
+          "gap": 20
+        },
+        "visibility": "$state.ui.showAdvancedFilters",
+        "children": [
+          {
+            "id": "owner-filter",
+            "type": "select",
+            "props": {
+              "label": "Report owner",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Loading options…"
+                }
+              ]
+            },
+            "bindings": {
+              "value": "$state.filters.owner",
+              "options": {
+                "source": "$data.facets.data.ownerOptions",
+                "default": []
+              }
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setOwner"
+              }
+            }
+          },
+          {
+            "id": "published-filter",
+            "type": "checkbox",
+            "props": {
+              "label": "Published reports only"
+            },
+            "bindings": {
+              "checked": "$state.filters.publishedOnly"
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setPublishedOnly"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "catalog-layout",
+        "type": "catalog-layout",
+        "children": [
+          {
+            "id": "report-facets",
+            "type": "stack",
+            "props": {
+              "className": "catalog-facets",
+              "gap": 14
+            },
+            "children": [
+              {
+                "id": "collections",
+                "type": "generic-navigation",
+                "props": {
+                  "label": "Report collections"
+                },
+                "bindings": {
+                  "items": {
+                    "source": "$data.facets.data.collections",
+                    "default": []
+                  },
+                  "selectedId": "$state.filters.collection",
+                  "loading": "$data.facets.loading"
+                },
+                "handlers": {
+                  "onSelect": {
+                    "action": "setCollection"
+                  }
+                }
+              },
+              {
+                "id": "facet-error",
+                "type": "text",
+                "props": {
+                  "className": "catalog-inline-error"
+                },
+                "visibility": "$data.facets.error",
+                "bindings": {
+                  "value": "$data.facets.error"
+                }
+              },
+              {
+                "id": "retry-facets",
+                "type": "button",
+                "props": {
+                  "label": "Retry facets",
+                  "variant": "secondary"
+                },
+                "visibility": "$data.facets.error",
+                "handlers": {
+                  "onClick": {
+                    "action": "reloadFacets"
+                  }
+                }
+              },
+              {
+                "id": "module-heading",
+                "type": "title",
+                "props": {
+                  "value": "BY MODULE",
+                  "level": 4
+                }
+              },
+              {
+                "id": "module-navigation",
+                "type": "generic-navigation",
+                "props": {
+                  "label": "By module"
+                },
+                "bindings": {
+                  "items": {
+                    "source": "$data.facets.data.modules",
+                    "default": []
+                  },
+                  "selectedId": "$state.filters.module",
+                  "loading": "$data.facets.loading"
+                },
+                "handlers": {
+                  "onSelect": {
+                    "action": "selectModule"
+                  }
+                }
+              },
+              {
+                "id": "framework-heading",
+                "type": "title",
+                "props": {
+                  "value": "BY COMPLIANCE FRAMEWORK",
+                  "level": 4
+                }
+              },
+              {
+                "id": "framework-navigation",
+                "type": "generic-navigation",
+                "props": {
+                  "label": "By compliance framework"
+                },
+                "bindings": {
+                  "items": {
+                    "source": "$data.facets.data.frameworks",
+                    "default": []
+                  },
+                  "selectedId": "$state.filters.framework",
+                  "loading": "$data.facets.loading"
+                },
+                "handlers": {
+                  "onSelect": {
+                    "action": "setFramework"
+                  }
+                }
+              },
+              {
+                "id": "type-heading",
+                "type": "title",
+                "props": {
+                  "value": "BY REPORT TYPE",
+                  "level": 4
+                }
+              },
+              {
+                "id": "type-navigation",
+                "type": "generic-navigation",
+                "props": {
+                  "label": "By report type"
+                },
+                "bindings": {
+                  "items": {
+                    "source": "$data.facets.data.types",
+                    "default": []
+                  },
+                  "selectedId": "$state.filters.type",
+                  "loading": "$data.facets.loading"
+                },
+                "handlers": {
+                  "onSelect": {
+                    "action": "setType"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "catalog-results",
+            "type": "stack",
+            "props": {
+              "className": "catalog-results",
+              "gap": 10
+            },
+            "children": [
+              {
+                "id": "ai-callout",
+                "type": "suggestion-callout",
+                "props": {
+                  "title": "Nothing quite fits?",
+                  "description": "Start from the closest report and refine your next review with AI.",
+                  "buttonLabel": "Find closest match",
+                  "suggestion": "access",
+                  "note": "Demo keyword suggestion · access reviews"
+                },
+                "handlers": {
+                  "onAccept": {
+                    "action": "setSearch"
+                  }
+                }
+              },
+              {
+                "id": "reports-list",
+                "type": "report-list",
+                "bindings": {
+                  "items": {
+                    "source": "$data.reports.data.items",
+                    "default": []
+                  },
+                  "loading": "$data.reports.loading",
+                  "error": "$data.reports.error",
+                  "selectedId": "$state.selectedReportId"
+                },
+                "handlers": {
+                  "onOpen": {
+                    "action": "openReport"
+                  },
+                  "onRetry": {
+                    "action": "reloadReports"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "report-details",
+        "type": "report-details",
+        "bindings": {
+          "open": "$state.ui.detailsOpen",
+          "report": {
+            "source": "$data.selectedReport.data.report",
+            "default": null
+          },
+          "loading": "$data.selectedReport.loading",
+          "error": "$data.selectedReport.error",
+          "running": "$state.ui.running",
+          "lastRun": "$state.lastRun"
+        },
+        "handlers": {
+          "onClose": {
+            "action": "closeReport"
+          },
+          "onRun": {
+            "action": "runReport"
+          },
+          "onRetry": {
+            "action": "loadSelectedReport"
+          }
+        }
+      },
+      {
+        "id": "dynamic-object-panel",
+        "type": "side-panel",
+        "props": {
+          "title": "Dynamic object details",
+          "description": "Content supplied by a remote ComponentDefinition"
+        },
+        "bindings": {
+          "open": "$state.detailsOpened"
+        },
+        "handlers": {
+          "onClose": {
+            "action": "closeObjectDetails"
+          }
+        },
+        "children": [
+          {
+            "id": "object-details-outlet",
+            "type": "schema-outlet",
+            "source": "objectDetailsPanel",
+            "enabled": "$state.detailsOpened",
+            "key": "$state.selectedObjectId",
+            "loading": {
+              "id": "object-details-loading",
+              "type": "spinner",
+              "props": {
+                "label": "Loading panel schema…"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "fragment-demo-panel",
+        "type": "side-panel",
+        "props": {
+          "title": "Dynamic fragment workbench",
+          "description": "Same cached definition, independent scopes. Change one instance and compare the other. Closing disposes both and any nested children.",
+          "size": "wide"
+        },
+        "bindings": {
+          "open": "$state.itemsDemoOpened"
+        },
+        "handlers": {
+          "onClose": {
+            "action": "closeItemsDemo"
+          }
+        },
+        "children": [
+          {
+            "id": "fragment-demo-context",
+            "type": "select",
+            "props": {
+              "label": "Fragment context",
+              "options": [
+                {
+                  "value": "workspace",
+                  "label": "Workspace"
+                },
+                {
+                  "value": "finance",
+                  "label": "Finance"
+                },
+                {
+                  "value": "operations",
+                  "label": "Operations"
+                }
+              ]
+            },
+            "bindings": {
+              "value": "$state.itemsDemoContext"
+            },
+            "handlers": {
+              "onChange": {
+                "action": "setItemsDemoContext"
+              }
+            }
+          },
+          {
+            "id": "fragment-demo-instances",
+            "type": "row",
+            "props": {
+              "className": "fragment-demo-columns",
+              "align": "stretch",
+              "gap": 16
+            },
+            "children": [
+              {
+                "id": "fragment-demo-left",
+                "type": "card",
+                "props": {
+                  "title": "Instance A",
+                  "description": "Edit this instance; B remains unchanged.",
+                  "className": "fragment-demo-instance"
+                },
+                "children": [
+                  {
+                    "id": "fragment-demo-left-outlet",
+                    "type": "schema-outlet",
+                    "key": "$state.itemsDemoContext",
+                    "source": {
+                      "request": {
+                        "method": "GET",
+                        "path": "/api/ui/fragments/items-panel/$state.itemsDemoContext"
+                      },
+                      "definitionCache": "view"
+                    },
+                    "lifecycle": {
+                      "scopeLifetime": "activation"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "fragment-demo-right",
+                "type": "card",
+                "props": {
+                  "title": "Instance B",
+                  "description": "An independent local state and items datasource.",
+                  "className": "fragment-demo-instance"
+                },
+                "children": [
+                  {
+                    "id": "fragment-demo-right-outlet",
+                    "type": "schema-outlet",
+                    "key": "$state.itemsDemoContext",
+                    "source": {
+                      "request": {
+                        "method": "GET",
+                        "path": "/api/ui/fragments/items-panel/$state.itemsDemoContext"
+                      },
+                      "definitionCache": "view"
+                    },
+                    "lifecycle": {
+                      "scopeLifetime": "activation"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "schemaSources": {
+    "objectDetailsPanel": {
+      "request": {
+        "method": "GET",
+        "path": "/api/ui/object-details/$state.selectedObjectId"
+      },
+      "load": {
+        "strategy": "onDemand",
+        "cache": "view"
+      }
+    }
+  }
+}

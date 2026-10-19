@@ -1,0 +1,111 @@
+{
+  "id": "fragment-guide",
+  "title": "Dynamic fragment — schema guide",
+  "initialState": {
+    "detailsOpened": true,
+    "contextId": "workspace"
+  },
+  "dataSources": {},
+  "actions": {
+    "setContext": {
+      "type": "state.set",
+      "target": "contextId",
+      "value": "$event.value"
+    },
+    "setOpened": {
+      "type": "state.set",
+      "target": "detailsOpened",
+      "value": "$event.value"
+    }
+  },
+  "root": {
+    "id": "guide-root",
+    "type": "stack",
+    "props": {
+      "gap": 16
+    },
+    "children": [
+      {
+        "id": "guide-title",
+        "type": "text",
+        "props": {
+          "value": "Dynamic fragment example"
+        }
+      },
+      {
+        "id": "guide-context",
+        "type": "select",
+        "props": {
+          "label": "Fragment context",
+          "options": [
+            {
+              "value": "workspace",
+              "label": "Workspace"
+            },
+            {
+              "value": "finance",
+              "label": "Finance"
+            },
+            {
+              "value": "operations",
+              "label": "Operations"
+            }
+          ]
+        },
+        "bindings": {
+          "value": "$state.contextId"
+        },
+        "handlers": {
+          "onChange": {
+            "action": "setContext"
+          }
+        }
+      },
+      {
+        "id": "guide-enabled",
+        "type": "switch",
+        "props": {
+          "label": "Show fragment"
+        },
+        "bindings": {
+          "checked": "$state.detailsOpened"
+        },
+        "handlers": {
+          "onChange": {
+            "action": "setOpened"
+          }
+        }
+      },
+      {
+        "id": "guide-outlet",
+        "type": "schema-outlet",
+        "enabled": "$state.detailsOpened",
+        "key": "$state.contextId",
+        "source": {
+          "request": {
+            "method": "GET",
+            "path": "/api/ui/fragments/items-panel/$state.contextId"
+          },
+          "definitionCache": "view"
+        },
+        "lifecycle": {
+          "scopeLifetime": "activation"
+        },
+        "loading": {
+          "id": "guide-loading",
+          "type": "spinner",
+          "props": {
+            "label": "Loading fragment definition…"
+          }
+        },
+        "error": {
+          "id": "guide-error",
+          "type": "text",
+          "props": {
+            "value": "Check that the demo backend is running."
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "remote-configuration",
+  "type": "stack",
+  "props": {
+    "gap": 20
+  },
+  "children": [
+    {
+      "id": "configuration-title",
+      "type": "title",
+      "props": {
+        "value": "Configuration",
+        "level": 2
+      }
+    },
+    {
+      "id": "configuration-cards",
+      "type": "row",
+      "props": {
+        "gap": 12
+      },
+      "children": [
+        {
+          "id": "policy-card",
+          "type": "card",
+          "props": {
+            "title": "18 policies",
+            "description": "16 active · 2 drafts"
+          }
+        },
+        {
+          "id": "policy-coverage",
+          "type": "card",
+          "props": {
+            "title": "96% coverage",
+            "description": "Baseline compliance"
+          }
+        }
+      ]
+    },
+    {
+      "id": "configuration-review",
+      "type": "text",
+      "props": {
+        "value": "Last policy review: today, 09:40 UTC. Changes are ready for approval."
+      }
+    },
+    {
+      "id": "configuration-approve",
+      "type": "button",
+      "props": {
+        "label": "Review policy changes"
+      },
+      "handlers": {
+        "onClick": {
+          "action": "confirmObjectAction"
+        }
+      }
+    }
+  ]
+}

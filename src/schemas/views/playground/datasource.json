@@ -1,0 +1,40 @@
+{
+  "id": "datasource-demo",
+  "title": "Datasource demo",
+  "initialState": { "query": "", "selectedId": null, "failRequests": false, "slowRequests": false },
+  "dataSources": {
+    "items": {
+      "type": "api",
+      "request": { "method": "GET", "path": "/api/items", "query": { "search": "$state.query", "fail": "$state.failRequests", "slow": "$state.slowRequests" } },
+      "dependsOn": ["$state.query", "$state.failRequests", "$state.slowRequests"],
+      "load": { "strategy": "onViewInit", "reload": "onDependencyChange" }
+    }
+  },
+  "actions": {
+    "setQuery": { "type": "state.set", "target": "query", "value": "$event.value" },
+    "selectItem": { "type": "state.set", "target": "selectedId", "value": "$event.value" },
+    "setFailure": { "type": "state.set", "target": "failRequests", "value": "$event.value" },
+    "setSlowRequests": { "type": "state.set", "target": "slowRequests", "value": "$event.value" },
+    "reloadItems": { "type": "datasource.reload", "source": "items" }
+  },
+  "root": { "id": "data-page", "type": "page", "children": [
+    { "id": "data-heading", "type": "page-header", "props": { "title": "Workspace items", "description": "Live records from GET /api/items." } },
+    { "id": "item-search", "type": "search-input", "props": { "label": "Search items", "placeholder": "Search the demo records…" }, "bindings": { "value": { "source": "$state.query", "default": "" } }, "handlers": { "onChange": { "action": "setQuery" }, "onSearch": { "action": "reloadItems" } } },
+    { "id": "item-list", "type": "generic-list", "props": { "label": "Backend items", "emptyMessage": "No items match your search." }, "bindings": {
+      "items": { "source": "$data.items.data.items", "default": [] },
+      "loading": "$data.items.loading", "selectedId": "$state.selectedId"
+    }, "handlers": { "onSelect": { "action": "selectItem" } } },
+    { "id": "request-error", "type": "text", "visibility": "$data.items.error", "bindings": { "value": { "source": "$data.items.error", "default": "" } }, "props": { "className": "ui-error-text" } },
+    { "id": "data-actions", "type": "row", "props": { "gap": 14 }, "children": [
+      { "id": "reload-items", "type": "button", "props": { "label": "Reload data", "variant": "secondary" }, "bindings": { "disabled": "$data.items.loading" }, "handlers": { "onClick": { "action": "reloadItems" } } },
+      { "id": "request-status", "type": "text", "props": { "className": "ui-muted" }, "bindings": { "value": { "source": "$data.items.status", "default": "idle" } } }
+    ] },
+    { "id": "api-controls", "type": "card", "props": { "title": "Request controls" }, "children": [
+      { "id": "request-settings", "type": "stack", "props": { "gap": 12 }, "children": [
+        { "id": "failure-switch", "type": "switch", "props": { "label": "Simulate API failure" }, "bindings": { "checked": "$state.failRequests" }, "handlers": { "onChange": { "action": "setFailure" } } },
+        { "id": "slow-switch", "type": "switch", "props": { "label": "Slow requests (1.2s)" }, "bindings": { "checked": "$state.slowRequests" }, "handlers": { "onChange": { "action": "setSlowRequests" } } }
+      ] }
+    ] },
+    { "id": "selected-item", "type": "text", "props": { "className": "ui-muted" }, "bindings": { "value": { "source": "$state.selectedId", "default": "Select an item to update view state." } } }
+  ] }
+}

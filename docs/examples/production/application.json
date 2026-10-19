@@ -1,0 +1,497 @@
+{
+  "id": "reference.application",
+  "initialState": {
+    "brand": "Schema Runtime",
+    "breadcrumbs": [
+      "Reference",
+      "Catalog"
+    ],
+    "navigationCollapsed": false,
+    "selectedNavigationId": "reporting.catalog",
+    "navigation": {
+      "expandedIds": [
+        "reporting"
+      ]
+    }
+  },
+  "dataSources": {
+    "navigation": {
+      "type": "api",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/navigation"
+      },
+      "load": {
+        "strategy": "onAppInit"
+      }
+    },
+    "me": {
+      "type": "api",
+      "request": {
+        "method": "GET",
+        "path": "/api/me"
+      },
+      "load": {
+        "strategy": "onAppInit"
+      }
+    }
+  },
+  "actions": {
+    "rememberNavigation": {
+      "type": "state.set",
+      "target": "selectedNavigationId",
+      "value": "$event.value"
+    },
+    "navigateSelected": {
+      "type": "navigate",
+      "to": "$event.href"
+    },
+    "selectNavigation": {
+      "type": "sequence",
+      "actions": [
+        "rememberNavigation",
+        "navigateSelected"
+      ]
+    },
+    "toggleNavigation": {
+      "type": "state.set",
+      "target": "navigationCollapsed",
+      "value": "$event.value"
+    },
+    "setExpanded": {
+      "type": "state.set",
+      "target": "navigation.expandedIds",
+      "value": "$event.value"
+    },
+    "retryNavigation": {
+      "type": "datasource.reload",
+      "source": "navigation"
+    }
+  },
+  "shell": {
+    "id": "reference-shell",
+    "type": "application-shell",
+    "bindings": {
+      "navigationCollapsed": "$appState.navigationCollapsed"
+    },
+    "children": [
+      {
+        "id": "reference-app-header",
+        "type": "application-header",
+        "bindings": {
+          "brand": "$appState.brand",
+          "breadcrumbs": "$appState.breadcrumbs",
+          "user": "$appData.me.data.user",
+          "navigationCollapsed": "$appState.navigationCollapsed"
+        },
+        "handlers": {
+          "onToggleNavigation": {
+            "action": "toggleNavigation"
+          }
+        }
+      },
+      {
+        "id": "reference-navigation",
+        "type": "data-tree",
+        "props": {
+          "component": "primary-navigation"
+        },
+        "bindings": {
+          "items": {
+            "source": "$appData.navigation.data.items",
+            "default": []
+          },
+          "expandedIds": "$appState.navigation.expandedIds",
+          "selectedId": "$appState.selectedNavigationId",
+          "loading": "$appData.navigation.loading",
+          "error": "$appData.navigation.error"
+        },
+        "handlers": {
+          "onSelect": {
+            "action": "selectNavigation"
+          },
+          "onExpandedChange": {
+            "action": "setExpanded"
+          },
+          "onRetry": {
+            "action": "retryNavigation"
+          }
+        }
+      },
+      {
+        "id": "reference-route",
+        "type": "route-outlet"
+      }
+    ]
+  },
+  "routes": [
+    {
+      "path": "catalog",
+      "viewId": "reference.catalog"
+    }
+  ],
+  "views": {
+    "reference.catalog": {
+      "id": "reference.catalog",
+      "title": "Runtime reference catalog",
+      "initialState": {
+        "query": "",
+        "showAdvanced": false,
+        "panelOpened": false,
+        "contextId": "workspace",
+        "selectedId": null,
+        "lastMessage": "Ready",
+        "apiError": "",
+        "messageEnvelope": null
+      },
+      "dataSources": {
+        "items": {
+          "type": "api",
+          "request": {
+            "method": "GET",
+            "path": "/api/items",
+            "query": {
+              "search": "$state.query",
+              "contextId": "$state.contextId"
+            }
+          },
+          "dependsOn": [
+            "$state.query",
+            "$state.contextId"
+          ],
+          "load": {
+            "strategy": "onViewInit",
+            "reload": "onDependencyChange",
+            "debounceMs": 180
+          }
+        }
+      },
+      "schemaSources": {
+        "itemPanel": {
+          "request": {
+            "method": "GET",
+            "path": "/api/ui/fragments/items-panel/$state.contextId"
+          },
+          "load": {
+            "strategy": "onDemand",
+            "definitionCache": "view"
+          }
+        }
+      },
+      "actions": {
+        "setQuery": {
+          "type": "state.set",
+          "target": "query",
+          "value": "$event.value"
+        },
+        "selectItem": {
+          "type": "state.set",
+          "target": "selectedId",
+          "value": "$event.value"
+        },
+        "setAdvanced": {
+          "type": "state.set",
+          "target": "showAdvanced",
+          "value": "$event.value"
+        },
+        "openPanel": {
+          "type": "state.set",
+          "target": "panelOpened",
+          "value": true
+        },
+        "closePanel": {
+          "type": "state.set",
+          "target": "panelOpened",
+          "value": false
+        },
+        "clearFilters": {
+          "type": "state.patch",
+          "value": {
+            "query": "",
+            "selectedId": null
+          }
+        },
+        "fetchMessage": {
+          "type": "api.request",
+          "request": {
+            "method": "GET",
+            "path": "/api/demo-message"
+          },
+          "target": "messageEnvelope",
+          "onSuccess": "acceptMessage",
+          "onError": "handleError"
+        },
+        "acceptMessage": {
+          "type": "sequence",
+          "actions": [
+            "rememberMessage",
+            "notifyMessage"
+          ]
+        },
+        "rememberMessage": {
+          "type": "state.set",
+          "target": "lastMessage",
+          "value": "$response.message"
+        },
+        "notifyMessage": {
+          "type": "notification.show",
+          "message": "$response.message",
+          "tone": "success"
+        },
+        "handleError": {
+          "type": "sequence",
+          "actions": [
+            "rememberError",
+            "notifyError"
+          ]
+        },
+        "rememberError": {
+          "type": "state.set",
+          "target": "apiError",
+          "value": "$response.error"
+        },
+        "notifyError": {
+          "type": "notification.show",
+          "message": "$response.error",
+          "tone": "error"
+        },
+        "reloadItems": {
+          "type": "datasource.reload",
+          "source": "items"
+        },
+        "invalidateItems": {
+          "type": "datasource.invalidate",
+          "source": "items"
+        }
+      },
+      "root": {
+        "id": "reference-page",
+        "type": "page",
+        "children": [
+          {
+            "id": "reference-header",
+            "type": "page-header",
+            "props": {
+              "title": "Runtime contract example",
+              "description": "Application, view, data, actions and remote fragments"
+            }
+          },
+          {
+            "id": "reference-controls",
+            "type": "stack",
+            "props": {
+              "gap": 16
+            },
+            "children": [
+              {
+                "id": "reference-search",
+                "type": "search-input",
+                "props": {
+                  "label": "Search items"
+                },
+                "bindings": {
+                  "value": "$state.query"
+                },
+                "handlers": {
+                  "onChange": {
+                    "action": "setQuery"
+                  }
+                }
+              },
+              {
+                "id": "reference-switch",
+                "type": "switch",
+                "props": {
+                  "label": "Advanced filters"
+                },
+                "bindings": {
+                  "checked": "$state.showAdvanced"
+                },
+                "handlers": {
+                  "onChange": {
+                    "action": "setAdvanced"
+                  }
+                }
+              },
+              {
+                "id": "reference-advanced",
+                "type": "card",
+                "props": {
+                  "title": "Advanced",
+                  "description": "This visibility uses current View state."
+                },
+                "visibility": "$state.showAdvanced"
+              },
+              {
+                "id": "reference-buttons",
+                "type": "row",
+                "props": {
+                  "gap": 8
+                },
+                "children": [
+                  {
+                    "id": "reference-fetch",
+                    "type": "button",
+                    "props": {
+                      "label": "Fetch message"
+                    },
+                    "handlers": {
+                      "onClick": {
+                        "action": "fetchMessage"
+                      }
+                    }
+                  },
+                  {
+                    "id": "reference-reload",
+                    "type": "button",
+                    "props": {
+                      "label": "Reload items",
+                      "variant": "secondary"
+                    },
+                    "handlers": {
+                      "onClick": {
+                        "action": "reloadItems"
+                      }
+                    }
+                  },
+                  {
+                    "id": "reference-invalidate",
+                    "type": "button",
+                    "props": {
+                      "label": "Invalidate",
+                      "variant": "ghost"
+                    },
+                    "handlers": {
+                      "onClick": {
+                        "action": "invalidateItems"
+                      }
+                    }
+                  },
+                  {
+                    "id": "reference-clear",
+                    "type": "button",
+                    "props": {
+                      "label": "Clear filters",
+                      "variant": "ghost"
+                    },
+                    "handlers": {
+                      "onClick": {
+                        "action": "clearFilters"
+                      }
+                    }
+                  },
+                  {
+                    "id": "reference-open",
+                    "type": "button",
+                    "props": {
+                      "label": "Open remote fragment",
+                      "variant": "secondary"
+                    },
+                    "handlers": {
+                      "onClick": {
+                        "action": "openPanel"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "reference-message",
+                "type": "text",
+                "bindings": {
+                  "value": {
+                    "source": "$state.lastMessage",
+                    "default": "Ready"
+                  }
+                }
+              },
+              {
+                "id": "reference-error",
+                "type": "error-message",
+                "visibility": "$data.items.error",
+                "bindings": {
+                  "text": "$data.items.error"
+                },
+                "handlers": {
+                  "onRetry": {
+                    "action": "reloadItems"
+                  }
+                }
+              },
+              {
+                "id": "reference-api-error",
+                "type": "text",
+                "visibility": "$state.apiError",
+                "bindings": {
+                  "value": "$state.apiError"
+                }
+              },
+              {
+                "id": "reference-list",
+                "type": "generic-list",
+                "props": {
+                  "label": "Reference items",
+                  "emptyMessage": "No matching items."
+                },
+                "bindings": {
+                  "items": {
+                    "source": "$data.items.data.items",
+                    "default": []
+                  },
+                  "loading": "$data.items.loading",
+                  "selectedId": "$state.selectedId"
+                },
+                "handlers": {
+                  "onSelect": {
+                    "action": "selectItem"
+                  }
+                }
+              },
+              {
+                "id": "reference-panel",
+                "type": "side-panel",
+                "props": {
+                  "title": "Remote fragment"
+                },
+                "bindings": {
+                  "open": "$state.panelOpened"
+                },
+                "handlers": {
+                  "onClose": {
+                    "action": "closePanel"
+                  }
+                },
+                "children": [
+                  {
+                    "id": "reference-schema",
+                    "type": "schema-outlet",
+                    "enabled": "$state.panelOpened",
+                    "key": "$state.contextId",
+                    "source": "itemPanel",
+                    "lifecycle": {
+                      "scopeLifetime": "activation"
+                    },
+                    "loading": {
+                      "id": "reference-loading",
+                      "type": "spinner",
+                      "props": {
+                        "label": "Loading schema…"
+                      }
+                    },
+                    "error": {
+                      "id": "reference-schema-error",
+                      "type": "text",
+                      "props": {
+                        "value": "Unable to acquire definition."
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

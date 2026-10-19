@@ -1,0 +1,3 @@
+import { Router } from 'express';
+export const healthRoutes = Router();
+healthRoutes.get('/health', (_request, response) => response.json({ ok: true, name: 'Schema Runtime demo API' }));

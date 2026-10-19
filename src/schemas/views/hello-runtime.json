@@ -1,0 +1,30 @@
+{
+  "id": "hello-runtime",
+  "title": "Minimal schema slice",
+  "initialState": { "message": "Waiting for a named action." },
+  "dataSources": {},
+  "actions": {
+    "showMessage": {
+      "type": "state.set",
+      "target": "message",
+      "value": "Updated through the runtime."
+    }
+  },
+  "root": {
+    "id": "page",
+    "type": "page",
+    "children": [
+      {
+        "id": "message",
+        "type": "text",
+        "bindings": { "value": "$state.message" }
+      },
+      {
+        "id": "update-message",
+        "type": "button",
+        "props": { "label": "Update message" },
+        "handlers": { "onClick": { "action": "showMessage" } }
+      }
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+import {Card,Button,Text} from '@fluentui/react-components';import {Icon} from '../icons';import type {ValueChangeCallback} from '../types';
+export interface SuggestionCalloutProps {title:string;description:string;suggestion:string;buttonLabel?:string;note?:string;onAccept:ValueChangeCallback<string>}
+export function SuggestionCallout({title,description,suggestion,buttonLabel='Try suggestion',note,onAccept}:SuggestionCalloutProps){return <Card role="region" className="suggestion-callout"><div><Text weight="semibold">{title}</Text><Text block as="p">{description}</Text></div><Button appearance="primary" icon={<Icon name="sparkle"/>} onClick={()=>onAccept({value:suggestion})}>{buttonLabel}</Button>{note&&<Text size={200}>{note}</Text>}</Card>;}
