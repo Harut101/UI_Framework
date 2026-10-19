@@ -454,51 +454,37 @@ export function validateViewDefinition(
   validateTree(view.root, value, registry, false);
 }
 export function validateApplicationDefinition(
-  value: ApplicationDefinition,
+  value: unknown,
   registry: ComponentRegistry,
-) {
+): asserts value is ApplicationDefinition {
   validateScope(value, "app");
-  if (validateTree(value.shell, value, registry, true) !== 1)
+  const application = value as ScopeDefinition & Record<string, unknown>;
+  if (validateTree(application.shell, value, registry, true) !== 1)
     throw new Error("Application shell needs exactly one route-outlet");
-  if (!Array.isArray(value.routes)) throw new Error("routes must be an array");
-  object(value.views, "views");
-  if (value.viewSource !== undefined) {
-    object(value.viewSource, "viewSource");
-    jsonLiteral(value.viewSource, "viewSource");
-    if (
-      Object.keys(value.viewSource).some(
-        (key) => !["request", "pathQueryParam", "onLoaded"].includes(key),
-      )
+  for (const property of ["routes", "views"]) {
+    if (Object.hasOwn(value, property))
+      throw new Error("Application." + property + " is not supported; use viewSource");
+  }
+  object(application.viewSource, "viewSource");
+  jsonLiteral(application.viewSource, "viewSource");
+  if (
+    Object.keys(application.viewSource).some(
+      (key) => !["request", "pathQueryParam", "onLoaded"].includes(key),
     )
-      throw new Error("Unknown viewSource property");
-    validateSchemaSource({ request: value.viewSource.request }, "app", true);
-    if (value.viewSource.pathQueryParam !== undefined) {
-      text(value.viewSource.pathQueryParam, "viewSource.pathQueryParam");
-      pathParts(value.viewSource.pathQueryParam);
-      if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(value.viewSource.pathQueryParam))
-        throw new Error("Invalid viewSource.pathQueryParam");
-    }
-    if (value.viewSource.onLoaded !== undefined) {
-      text(value.viewSource.onLoaded, "viewSource.onLoaded");
-      if (!Object.hasOwn(value.actions, value.viewSource.onLoaded))
-        throw new Error(
-          "Unknown viewSource action: " + value.viewSource.onLoaded,
-        );
-    }
-    if (value.routes.length)
-      throw new Error("Use viewSource or bundled routes, not both");
+  )
+    throw new Error("Unknown viewSource property");
+  validateSchemaSource({ request: application.viewSource.request }, "app", true);
+  if (application.viewSource.pathQueryParam !== undefined) {
+    text(application.viewSource.pathQueryParam, "viewSource.pathQueryParam");
+    pathParts(application.viewSource.pathQueryParam);
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(application.viewSource.pathQueryParam))
+      throw new Error("Invalid viewSource.pathQueryParam");
   }
-  const paths = new Set<string>();
-  for (const route of value.routes) {
-    if (paths.has(route.path))
-      throw new Error(`Duplicate route: ${route.path}`);
-    paths.add(route.path);
-    if (!value.views[route.viewId])
-      throw new Error(`Unknown view: ${route.viewId}`);
+  if (application.viewSource.onLoaded !== undefined) {
+    text(application.viewSource.onLoaded, "viewSource.onLoaded");
+    if (!Object.hasOwn(value.actions, application.viewSource.onLoaded))
+      throw new Error("Unknown viewSource action: " + application.viewSource.onLoaded);
   }
-  Object.values(value.views).forEach((view) =>
-    validateViewDefinition(view, registry),
-  );
 }
 
 export function validateFragment(

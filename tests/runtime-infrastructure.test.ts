@@ -262,7 +262,7 @@ describe('application/view scope and generic action boundaries', () => {
   it('keeps identically named state/actions/datasources separate and preserves app data on view disposal', async () => {
     const { runtime: view, environment, transport } = setup();
     const appSource: DataSourceDefinition = { ...definition().dataSources.reports, request: { method: 'GET', path: '/api/global', query: { module: '$appState.filters.module' } }, dependsOn: ['$appState.filters.module'], load: { strategy: 'onAppInit', reload: 'onDependencyChange' } };
-    const app = new ApplicationRuntime({ ...definition(), dataSources: { reports: appSource }, shell: { id: 'shell', type: 'page' }, routes: [], views: {} }, environment); runtimes.push(app);
+    const app = new ApplicationRuntime({ ...definition(), dataSources: { reports: appSource }, shell: { id: 'shell', type: 'page' }, viewSource: { request: { path: "/api/ui/views" } } }, environment); runtimes.push(app);
     app.start(); view.start(); await settle(); expect(transport).toHaveBeenCalledTimes(2);
     await app.actionEngine.execute('setModule', { event: { value: 'global' } }); await settle();
     expect(transport).toHaveBeenCalledTimes(3);

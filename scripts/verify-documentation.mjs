@@ -79,10 +79,12 @@ const actualTypes = registry.list();
 if (JSON.stringify(actualTypes) !== JSON.stringify(model.components.map(component=>component.schemaType)))
   problems.push('Registry types differ from documented components');
 const manifest = JSON.parse(fs.readFileSync(path.join(directory,'examples.json'),'utf8'));
+const examples = [];
 for (const entry of manifest) {
   const file = path.resolve(directory,entry.path);
   try {
     const value = JSON.parse(fs.readFileSync(file,'utf8'));
+    examples.push(value);
     if (entry.kind === 'application') validateApplicationDefinition(value,registry);
     else if (entry.kind === 'view') validateViewDefinition(value,registry);
     else if (entry.kind === 'fragment') normalizeFragmentDefinition(value,registry);
@@ -90,13 +92,10 @@ for (const entry of manifest) {
     else throw new Error('Unknown example kind');
   } catch(error) { problems.push(file + ': ' + error.message); }
 }
-const appExample = JSON.parse(fs.readFileSync('docs/examples/production/application.json','utf8'));
-const viewExample = JSON.parse(fs.readFileSync('docs/examples/production/view.json','utf8'));
-if (JSON.stringify(appExample.views[viewExample.id]) !== JSON.stringify(viewExample)) problems.push('Embedded and standalone example View differ');
 const actionTypes = new Set();
 const definedActionTypes = [...new Set(model.rows.map(row=>/^ActionDefinition\[(.+)\]$/.exec(row.owner)?.[1]).filter(Boolean))].sort();
 const visit = value => { if (value && typeof value === 'object') { if (value.actions && !Array.isArray(value.actions)) for (const action of Object.values(value.actions)) actionTypes.add(action.type); Object.values(value).forEach(visit); } };
-visit(appExample);
+examples.forEach(visit);
 for (const type of definedActionTypes)
   if (!actionTypes.has(type)) problems.push('Missing action type example: '+type);
 for (const name of fs.readdirSync(directory).filter(name=>name.endsWith('.md'))) {

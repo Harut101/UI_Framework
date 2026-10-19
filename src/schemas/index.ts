@@ -6,13 +6,10 @@ import {
   validateApplicationDefinition,
   validateViewDefinition,
 } from "../runtime/shared/validation";
-import type { ApplicationDefinition } from "../runtime/application/types";
 const registry = registerRouteOutlet(createComponentRegistry());
 const view: unknown = viewJson;
 validateViewDefinition(view, registry);
 export const helloViewDefinition = view;
-export const applicationDefinition: ApplicationDefinition = {
-  ...applicationJson,
-  views: { [view.id]: view },
-};
-validateApplicationDefinition(applicationDefinition, registry);
+const application: unknown = applicationJson;
+validateApplicationDefinition(application, registry);
+export const applicationDefinition = application;

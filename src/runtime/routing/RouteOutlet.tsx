@@ -1,19 +1,18 @@
 import { useSelector } from "react-redux";
 import type { RuntimeState, RequestDefinition } from "../shared/types";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import type { ComponentRegistry } from "../rendering/ComponentRegistry";
 import type { RuntimeEnvironment } from "../shared/RuntimeEnvironment";
 import type { RuntimeScope } from "../shared/RuntimeScope";
-import type { RouteDefinition, ViewSourceDefinition } from "./types";
+import type { ViewSourceDefinition } from "./types";
 import type { ViewSchemaLoader } from "./ViewSchemaLoader";
 import type { ViewDefinition } from "../view/types";
 import { FragmentRenderBoundary } from "../schema/FragmentRenderBoundary";
 import { ViewRuntimeHost } from "../view/ViewRuntimeHost";
 
 export const RouteRuntimeContext = createContext<{
-  routes: RouteDefinition[];
-  viewSource?: ViewSourceDefinition;
+  viewSource: ViewSourceDefinition;
   runtime: RuntimeScope;
   loader: ViewSchemaLoader;
   environment: RuntimeEnvironment;
@@ -21,18 +20,6 @@ export const RouteRuntimeContext = createContext<{
   revision: number;
 } | null>(null);
 
-function RoutedView({ viewId }: { viewId: string }) {
-  const context = useContext(RouteRuntimeContext)!;
-  const { pathname } = useLocation();
-  return (
-    <ViewRuntimeHost
-      key={[pathname, viewId, context.revision].join(":")}
-      definition={context.loader.load(viewId)}
-      environment={context.environment}
-      registry={context.registry}
-    />
-  );
-}
 function RemoteView({ source }: { source: ViewSourceDefinition }) {
   const context = useContext(RouteRuntimeContext)!;
   const { pathname } = useLocation();
@@ -151,23 +138,7 @@ function RemoteView({ source }: { source: ViewSourceDefinition }) {
 export function RouteOutlet() {
   const context = useContext(RouteRuntimeContext);
   if (!context) throw new Error("RouteOutlet must be inside ApplicationHost");
-  if (context.viewSource) return <RemoteView source={context.viewSource} />;
-  if (!context.routes.length) return null;
-  return (
-    <Routes>
-      {context.routes.map((route) => (
-        <Route
-          key={route.path}
-          path={route.path}
-          element={<RoutedView viewId={route.viewId} />}
-        />
-      ))}
-      <Route
-        path="*"
-        element={<Navigate replace to={context.routes[0].path} />}
-      />
-    </Routes>
-  );
+  return <RemoteView source={context.viewSource} />;
 }
 export function registerRouteOutlet(registry: ComponentRegistry) {
   return registry.register("route-outlet", RouteOutlet);

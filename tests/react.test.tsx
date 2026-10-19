@@ -52,15 +52,15 @@ describe('React runtime integration', () => {
     let mounts = 0; let unmounts = 0;
     function Shell({ children }: { children?: ReactNode }) { useEffect(() => { mounts++; return () => { unmounts++; }; }, []); return <div>{children}</div>; }
     function View({ value }: { value: string }) { return <p>{value}</p>; }
-    const registry = registerRouteOutlet(new ComponentRegistry().register('shell', Shell).register('view', View));
+    const registry = registerRouteOutlet(createComponentRegistry().register('shell', Shell).register('view', View));
     const makeView = (id: string): ViewDefinition => ({ id, title: id, initialState: { filter: id }, actions: {}, dataSources: { items: { type: 'api', request: { method: 'GET', path: '/api/items' }, load: { strategy: 'onViewInit' } } }, root: { id: 'view', type: 'view', bindings: { value: '$state.filter' } } });
-    const definition: ApplicationDefinition = { id: 'app', initialState: { persistent: true }, dataSources: {}, actions: { go: { type: 'navigate', to: '$event.value' } }, shell: { id: 'shell', type: 'shell', children: [{ id: 'outlet', type: 'route-outlet' }] }, routes: [{ path: '/one', viewId: 'one' }, { path: '/two', viewId: 'two' }], views: { one: makeView('one'), two: makeView('two') } };
+    const definition: ApplicationDefinition = { id: 'app', initialState: { persistent: true }, dataSources: {}, actions: { go: { type: 'navigate', to: '$event.value' } }, shell: { id: 'shell', type: 'shell', children: [{ id: 'outlet', type: 'route-outlet' }] }, viewSource: { request: { path: '/api/view-schema' } } };
     let navigateTo: ((to: string) => void) | undefined;
     function Bridge() { const navigate = useNavigate(); useLayoutEffect(() => { navigateTo = navigate; }, [navigate]); return null; }
     const signals: AbortSignal[] = [];
-    const environment = new RuntimeEnvironment(to => navigateTo?.(to), vi.fn(), (_request, signal) => { signals.push(signal); return new Promise(() => undefined); });
+    const environment = new RuntimeEnvironment(to => navigateTo?.(to), vi.fn(), (_request, signal) => { if (_request.path === '/api/view-schema') return Promise.resolve(makeView(String(_request.query?.path).slice(1))); signals.push(signal); return new Promise(() => undefined); });
     const runtime = new ApplicationRuntime(definition, environment); cleanups.push(() => runtime.dispose());
-    await act(async () => root.render(<Provider store={environment.store}><MemoryRouter initialEntries={['/one']}><Bridge/><ApplicationHost definition={definition} views={definition.views} environment={environment} runtime={runtime} registry={registry} revision={0}/></MemoryRouter></Provider>));
+    await act(async () => root.render(<Provider store={environment.store}><MemoryRouter initialEntries={['/one']}><Bridge/><ApplicationHost definition={definition} environment={environment} runtime={runtime} registry={registry} revision={0}/></MemoryRouter></Provider>));
     const firstInstance = environment.store.getState().viewInstance;
     expect(container.textContent).toBe('one'); expect(mounts).toBe(1);
     await act(async () => runtime.actionEngine.execute('go', { event: { value: '/two' } }));
@@ -86,13 +86,13 @@ describe('React runtime integration', () => {
     function Shell({ children }: { children?: ReactNode }) { useEffect(() => { mounts++; }, []); return <main>{children}</main>; }
     const registry = registerRouteOutlet(createComponentRegistry().register('shell', Shell));
     const view: ViewDefinition = { ...helloViewDefinition, dataSources: { items: { type: 'api', request: { method: 'GET', path: '/api/items' }, dependsOn: ['$state.message'], load: { strategy: 'onViewInit', reload: 'onDependencyChange', debounceMs: 100 } } } };
-    const definition: ApplicationDefinition = { id: 'app', initialState: { message: 'Application message' }, dataSources: {}, actions: { go: { type: 'navigate', to: '$event.value' } }, shell: { id: 'shell', type: 'shell', children: [{ id: 'app-message', type: 'text', bindings: { value: '$appState.message' } }, { id: 'outlet', type: 'route-outlet' }] }, routes: [{ path: '/item/:id', viewId: 'shared' }], views: { shared: view } };
+    const definition: ApplicationDefinition = { id: 'app', initialState: { message: 'Application message' }, dataSources: {}, actions: { go: { type: 'navigate', to: '$event.value' } }, shell: { id: 'shell', type: 'shell', children: [{ id: 'app-message', type: 'text', bindings: { value: '$appState.message' } }, { id: 'outlet', type: 'route-outlet' }] }, viewSource: { request: { path: '/api/view-schema' } } };
     let navigateTo: ((to: string) => void) | undefined;
     function Bridge() { const navigate = useNavigate(); useLayoutEffect(() => { navigateTo = navigate; }, [navigate]); return null; }
     const signals: AbortSignal[] = [];
-    const environment = new RuntimeEnvironment(to => navigateTo?.(to), vi.fn(), (_request, signal) => { signals.push(signal); return new Promise(() => undefined); });
+    const environment = new RuntimeEnvironment(to => navigateTo?.(to), vi.fn(), (_request, signal) => { if (_request.path === '/api/view-schema') return Promise.resolve(view); signals.push(signal); return new Promise(() => undefined); });
     const runtime = new ApplicationRuntime(definition, environment); cleanups.push(() => runtime.dispose());
-    await act(async () => root.render(<Provider store={environment.store}><MemoryRouter initialEntries={['/item/one']}><Bridge/><ApplicationHost definition={definition} views={definition.views} environment={environment} runtime={runtime} registry={registry}/></MemoryRouter></Provider>));
+    await act(async () => root.render(<Provider store={environment.store}><MemoryRouter initialEntries={['/item/one']}><Bridge/><ApplicationHost definition={definition} environment={environment} runtime={runtime} registry={registry}/></MemoryRouter></Provider>));
     const first = environment.store.getState().viewInstance;
     await act(async () => container.querySelector<HTMLButtonElement>('button')!.click());
     expect(container.textContent).toContain('Updated through the runtime.');

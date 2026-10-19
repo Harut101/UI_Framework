@@ -55,7 +55,7 @@ async function mount(entries = ['/application/catalog'], strict = false) {
   environment = new RuntimeEnvironment(to => navigate(to), vi.fn(), transport);
   application = new ApplicationRuntime(reportingApplicationDefinition, environment); application.start();
   container = document.createElement('div'); document.body.append(container); root = createFluentRoot(container);
-  const content = <Provider store={environment.store}><MemoryRouter initialEntries={entries}><RouterProbe/><ApplicationHost definition={reportingApplicationDefinition} views={{}} environment={environment} runtime={application} registry={registry}/></MemoryRouter></Provider>;
+  const content = <Provider store={environment.store}><MemoryRouter initialEntries={entries}><RouterProbe/><ApplicationHost definition={reportingApplicationDefinition} environment={environment} runtime={application} registry={registry}/></MemoryRouter></Provider>;
   await act(async () => root.render(strict ? <StrictMode>{content}</StrictMode> : content));
 }
 const schemas = () => requests.filter(entry => entry.path === '/api/ui/views');
@@ -68,7 +68,7 @@ describe('navigation URL loads a complete backend ViewDefinition', () => {
     await mount(); await until(() => loaded('reporting.catalog') && environment.store.getState().viewData.reports?.status === 'success');
     const shell = container.querySelector('.application-header'); const store = environment.store;
     const previous = environment.viewScope!; const appId = application.scopeId;
-    expect(reportingApplicationDefinition.routes).toEqual([]); expect(reportingApplicationDefinition.views).toEqual({});
+    expect(reportingApplicationDefinition).not.toHaveProperty('routes'); expect(reportingApplicationDefinition).not.toHaveProperty('views');
     await click(button('Users catalog')); await until(() => loaded('users.catalog') && environment.store.getState().viewData.users?.status === 'success');
     expect(pathname).toBe('/application/users'); expect(schemas().map(entry => entry.query?.path)).toEqual(['/application/catalog','/application/users']);
     expect(environment.store).toBe(store); expect(application.scopeId).toBe(appId); expect(container.querySelector('.application-header')).toBe(shell);

@@ -58,7 +58,7 @@ beforeEach(async () => {
   container = document.createElement('div'); document.body.append(container); root = createRoot(container);
   environment = new RuntimeEnvironment(vi.fn(), vi.fn(), transport);
   runtime = new ApplicationRuntime(reportingApplicationDefinition, environment); runtime.start();
-  await act(async () => root.render(<Provider store={environment.store}><MemoryRouter initialEntries={['/application/catalog']}><ApplicationHost definition={reportingApplicationDefinition} views={reportingApplicationDefinition.views} environment={environment} runtime={runtime} registry={registry}/></MemoryRouter></Provider>));
+  await act(async () => root.render(<Provider store={environment.store}><MemoryRouter initialEntries={['/application/catalog']}><ApplicationHost definition={reportingApplicationDefinition} environment={environment} runtime={runtime} registry={registry}/></MemoryRouter></Provider>));
   await until(() => environment.store.getState().viewData.reports?.status === 'success' && environment.store.getState().appData.navigation?.status === 'success' && environment.store.getState().viewData.facets?.status === 'success' && environment.store.getState().appData.me?.status === 'success');
 });
 afterEach(async () => { await act(async () => root.unmount()); runtime.dispose(); container.remove(); });

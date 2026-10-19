@@ -32,7 +32,7 @@ async function mountApp(transport: ApiTransport) {
     actions: { change: { type: 'state.set', target: 'request', value: '$event.value' },
       loaded: { type: 'state.set', target: 'breadcrumbs', value: '$event.title' } },
     shell: { id: 'shell', type: 'container', children: [{ id: 'outlet', type: 'route-outlet' }] },
-    routes: [], views: {}, viewSource: { request: '$appState.request', onLoaded: 'loaded' },
+    viewSource: { request: '$appState.request', onLoaded: 'loaded' },
   };
   const registry = registerRouteOutlet(new ComponentRegistry()
     .register('container', ({ children }: { children?: ReactNode }) => <div data-shell>{children}</div>)
@@ -41,7 +41,7 @@ async function mountApp(transport: ApiTransport) {
     .register('error-message', ({ text }: { text?: string }) => <p>{text}</p>));
   validateApplicationDefinition(definition, registry);
   const runtime = new ApplicationRuntime(definition, environment); runtime.start(); target();
-  await act(async () => root!.render(<Provider store={environment.store}><MemoryRouter initialEntries={['/workspace']}><ApplicationHost definition={definition} views={{}} runtime={runtime} environment={environment} registry={registry}/></MemoryRouter></Provider>));
+  await act(async () => root!.render(<Provider store={environment.store}><MemoryRouter initialEntries={['/workspace']}><ApplicationHost definition={definition} runtime={runtime} environment={environment} registry={registry}/></MemoryRouter></Provider>));
   return runtime;
 }
 describe('architecture audit acceptance regressions', () => {

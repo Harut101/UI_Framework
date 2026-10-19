@@ -36,7 +36,7 @@ src/
   components/     Isolated primitive, layout, navigation, reporting, users UI
   contracts/      Shared API/UI data contracts
   schemas/
-    application/  Application shell, app actions/data, routes
+    application/  Application shell, app actions/data, remote view source
     views/        Readable Reports, Users, and editor sample JSON
   playground/     Tabs, schema selector/comparison, inspector, architecture modal
 backend/
@@ -60,7 +60,7 @@ docs/            Detailed architecture and demo documentation
 | redux | App/view slices, independent fragment entries, stale-instance guards, scope-qualified changed paths and listener middleware |
 | routing | RouteOutlet loads a ViewDefinition through ViewSchemaLoader |
 
-`$state`/`$data` read the current RuntimeScope; `$viewState`/`$viewData` read its owning view, and `$appState`/`$appData` read its owning application. Fragment-local values live under `fragments[scopeId].state/data` in the same store. Owning-view reads are undefined for application-level scopes. Application scope survives view changes. Each new view initializes fresh state/data and disposes the old view's timers/requests. The Full Application tab loads complete ViewDefinitions from the backend using the current navigation URL. Application viewSource defines the resolver endpoint; legacy bundled routes/views remain supported. See [remote View routing](docs/production/remote-view-routing.md).
+`$state`/`$data` read the current RuntimeScope; `$viewState`/`$viewData` read its owning view, and `$appState`/`$appData` read its owning application. Fragment-local values live under `fragments[scopeId].state/data` in the same store. Owning-view reads are undefined for application-level scopes. Application scope survives view changes. Each new view initializes fresh state/data and disposes the old view's timers/requests. The Full Application tab loads complete ViewDefinitions from the backend using the current navigation URL. Application viewSource defines the resolver endpoint. Every application loads its views through that source; bundled route tables and embedded views are not supported. See [remote View routing](docs/production/remote-view-routing.md).
 
 ## Two independent data flows
 

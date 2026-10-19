@@ -167,8 +167,8 @@ describe('scope-aware binding selectors', () => {
     const { view } = setup(); const registry = new ComponentRegistry().register('text', () => null);
     const schema: ViewDefinition = { ...view.definition, title: 'Scoped', root: { id: 'text', type: 'text', bindings: { value: '$viewState.query' }, visibility: '$viewData.items.loading' } };
     expect(() => validateViewDefinition(schema, registry)).not.toThrow();
-    expect(() => validateApplicationDefinition({ ...definition('app'), schemaSources: { local: { request: { path: '/api/$state.query' }, load: { strategy: 'onDemand' } } }, shell: { id: 'outlet', type: 'route-outlet' }, routes: [], views: {} }, registry)).not.toThrow();
-    expect(() => validateApplicationDefinition({ ...definition('app'), schemaSources: { local: { request: { path: '/api/$viewState.query' }, load: { strategy: 'onDemand' } } }, shell: { id: 'outlet', type: 'route-outlet' }, routes: [], views: {} }, registry)).toThrow('no owning view');
+    expect(() => validateApplicationDefinition({ ...definition('app'), schemaSources: { local: { request: { path: '/api/$state.query' }, load: { strategy: 'onDemand' } } }, shell: { id: 'outlet', type: 'route-outlet' }, viewSource: { request: { path: "/api/ui/views" } } }, registry)).not.toThrow();
+    expect(() => validateApplicationDefinition({ ...definition('app'), schemaSources: { local: { request: { path: '/api/$viewState.query' }, load: { strategy: 'onDemand' } } }, shell: { id: 'outlet', type: 'route-outlet' }, viewSource: { request: { path: "/api/ui/views" } } }, registry)).toThrow('no owning view');
   });
 });
 

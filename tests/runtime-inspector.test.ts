@@ -1,22 +1,31 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Diagnostics, diagnosticDetail } from '../src/runtime/shared/Diagnostics';
 import { RuntimeEnvironment } from '../src/runtime/shared/RuntimeEnvironment';
+import { ApplicationRuntime } from '../src/runtime/application/ApplicationRuntime';
 import { ViewRuntime } from '../src/runtime/view/ViewRuntime';
 import { createComponentRegistry, registerApplicationComponents } from '../src/components/registry';
 import { inspectDatasources, actionLogEntries, lifecycleLogEntries, formatInspectorValue, schemaId } from '../src/playground/application-tab/inspectorModel';
 import { reportingApplicationDefinition, reportingCatalogDefinition, usersCatalogDefinition } from '../src/schemas/reporting';
-import type { RuntimeState, ViewDefinition } from '../src/runtime/shared/types';
+import type { ViewDefinition } from '../src/runtime/shared/types';
 
 describe('read-only runtime inspection', () => {
-  it('reads the active view and its graph declarations without including the previous view', () => {
-    const state: RuntimeState = { fragments: {}, applicationInstance: null, schemaFragments: {}, appState: {}, appData: {}, viewState: {}, viewData: { users: { status: 'success', loading: false, data: { items: [] }, error: null } }, viewInstance: 'users.catalog:42' };
-    const before = structuredClone(state);
-    const sources = inspectDatasources({ ...reportingApplicationDefinition, views: { 'users.catalog': usersCatalogDefinition } }, state);
-    expect(sources.map(source => source.key)).toEqual(['app:navigation', 'app:me', 'view:users']);
-    expect(sources.find(source => source.key === 'view:users')).toMatchObject({ definition: usersCatalogDefinition.dataSources.users, entry: state.viewData.users, dependencies: ['$state.filters.department', '$state.filters.status', '$state.filters.search'] });
-    expect(state).toEqual(before);
-    expect(inspectDatasources(reportingApplicationDefinition, { ...state, viewInstance: null }).every(source => source.scope === 'app')).toBe(true);
-    expect(schemaId('custom:catalog:17')).toBe('custom:catalog'); expect(schemaId(null)).toBeNull();
+  it('reads only live scope definitions and removes disposed view entries', () => {
+    const environment = new RuntimeEnvironment(vi.fn(), vi.fn(), vi.fn(async () => ({})));
+    const app = new ApplicationRuntime(reportingApplicationDefinition, environment);
+    const reports = new ViewRuntime(reportingCatalogDefinition, environment);
+    reports.dispose();
+    const users = new ViewRuntime(usersCatalogDefinition, environment);
+    try {
+      const state = environment.store.getState();
+      const before = structuredClone(state);
+      const sources = inspectDatasources(environment, state);
+      expect(sources.map(source => source.key)).toEqual([app.scopeId + ':navigation', app.scopeId + ':me', users.scopeId + ':users']);
+      expect(sources.find(source => source.key === users.scopeId + ':users')).toMatchObject({ definition: usersCatalogDefinition.dataSources.users, entry: state.viewData.users, dependencies: ['$state.filters.department', '$state.filters.status', '$state.filters.search'] });
+      expect(state).toEqual(before);
+      users.dispose();
+      expect(inspectDatasources(environment, environment.store.getState()).every(source => source.scope === 'app')).toBe(true);
+      expect(schemaId('custom:catalog:17')).toBe('custom:catalog'); expect(schemaId(null)).toBeNull();
+    } finally { app.dispose(); }
   });
   it('returns detached registry names and handles unresolved diagnostic values safely', () => {
     const registry = registerApplicationComponents(createComponentRegistry());
@@ -39,10 +48,15 @@ describe('read-only runtime inspection', () => {
     } finally { runtime.dispose(); }
   });
   it('keeps app and view datasource IDs distinct even when they share a name', () => {
-    const application = { ...reportingApplicationDefinition, views: { 'users.catalog': usersCatalogDefinition }, dataSources: { users: { ...usersCatalogDefinition.dataSources.users, dependsOn: ['$appState.department' as const] } } };
-    const sources = inspectDatasources(application, { fragments: {}, applicationInstance: null, schemaFragments: {}, appState: {}, appData: {}, viewState: {}, viewData: {}, viewInstance: 'users.catalog:1' });
-    expect(sources.map(source => source.key)).toEqual(['app:users', 'view:users']);
-    expect(sources[0].dependencies).toEqual(['$appState.department']);
+    const application = { ...reportingApplicationDefinition, dataSources: { users: { ...usersCatalogDefinition.dataSources.users, dependsOn: ['$appState.department' as const] } } };
+    const environment = new RuntimeEnvironment(vi.fn(), vi.fn(), vi.fn(async () => ({})));
+    const app = new ApplicationRuntime(application, environment);
+    const users = new ViewRuntime(usersCatalogDefinition, environment);
+    try {
+      const sources = inspectDatasources(environment, environment.store.getState());
+      expect(sources.map(source => source.key)).toEqual([app.scopeId + ':users', users.scopeId + ':users']);
+      expect(sources[0].dependencies).toEqual(['$appState.department']);
+    } finally { app.dispose(); }
   });
 });
 

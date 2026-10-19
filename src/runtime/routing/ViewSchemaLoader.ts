@@ -20,17 +20,6 @@ type PendingView = {
 
 export class ViewSchemaLoader {
   private readonly pending = new Map<string, PendingView>();
-  constructor(
-    private readonly views: Readonly<Record<string, ViewDefinition>>,
-  ) {}
-  /** Compatibility for applications with bundled routes. */
-  load(viewId: string): ViewDefinition {
-    const definition = Object.hasOwn(this.views, viewId)
-      ? this.views[viewId]
-      : undefined;
-    if (!definition) throw new Error("Unknown view definition: " + viewId);
-    return definition;
-  }
   /** Pure snapshot projection used by the reactive route host and non-React callers. */
   prepare(
     pathname: string,

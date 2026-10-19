@@ -41,7 +41,7 @@ export function DeveloperRuntimeInspector({ environment, application, registry }
 }) {
   const state = useSyncExternalStore(environment.store.subscribe, environment.store.getState);
   const traces = useSyncExternalStore(environment.diagnostics.subscribe, environment.diagnostics.snapshot);
-  const sources = inspectDatasources(application, state, environment);
+  const sources = inspectDatasources(environment, state);
   const types = registry.list();
   const hierarchy = inspectScopeHierarchy(environment, state);
   const links = environment.dependencyGraph.registrations().flatMap(edge => edge.paths.map(path => ({
@@ -51,7 +51,7 @@ export function DeveloperRuntimeInspector({ environment, application, registry }
     <header><div><Icon name="activity" size={17}/><h2>Runtime Inspector</h2><Badge className="tooling-label" appearance="tint" color="brand">PLAYGROUND TOOLING</Badge></div><ToolButton type="button" onClick={environment.diagnostics.clear}><Icon name="delete" size={13}/>Clear logs</ToolButton></header>
     <p className="inspector-description">Read-only state and schema inspection. Runtime behavior is independent of this panel. Logs retain the latest 100 events across view changes. Press Ctrl+Alt+I to inspect live scopes while a schema drawer is open.</p>
     <dl className="inspector-identity"><div><dt>Current Application schema id</dt><dd>{environment.applicationScope?.definition.id ?? application.id}</dd></div><div><dt>Current View schema id</dt><dd>{environment.viewScope?.definition.id ?? 'none'}</dd></div></dl>
-    <div className="inspector-content"><ScopeHierarchy roots={hierarchy}/><Disclosure className="inspector-schema-resources" title="Schema definition resources and loaded trees"><FragmentInspector state={state} application={application} environment={environment}/></Disclosure><div className="inspector-grid">
+    <div className="inspector-content"><ScopeHierarchy roots={hierarchy}/><Disclosure className="inspector-schema-resources" title="Schema definition resources and loaded trees"><FragmentInspector state={state} environment={environment}/></Disclosure><div className="inspector-grid">
       <section className="inspector-box"><h3><Icon name="code" size={14}/>State namespaces</h3><RuntimeInspector environment={environment} showHeading={false} showFragments={false}/></section>
       <div className="inspector-column">
         <section className="inspector-box"><h3><Icon name="database" size={14}/>Current datasource statuses</h3><div className="inspector-statuses">{sources.map(source => <article key={source.key}><header><strong>{source.id}</strong><small>{source.scopeId ?? source.scope}</small><Badge appearance="tint" color={source.entry?.status==="error"?"danger":source.entry?.status==="success"?"success":"informative"}>{source.entry?.status??"idle"}</Badge></header><dl><div><dt>status</dt><dd>{source.entry?.status ?? 'idle'}</dd></div><div><dt>loading</dt><dd>{String(source.entry?.loading ?? false)}</dd></div><div><dt>error</dt><dd>{source.entry?.error ?? 'null'}</dd></div></dl></article>)}</div></section>

@@ -1,8 +1,4 @@
 import type { SchemaRequestSource } from "../schema/types";
-export interface RouteDefinition {
-  path: string;
-  viewId: string;
-}
 /** Resolve browser pathnames on the server, without per-navigation route registration. */
 export interface ViewSourceDefinition {
   request: SchemaRequestSource;

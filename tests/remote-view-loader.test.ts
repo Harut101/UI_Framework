@@ -13,13 +13,13 @@ const source = { request: { path: '/api/view-schema' }, pathQueryParam: 'url' };
 const view = (id = 'remote'): ViewDefinition => ({ id, title: id, initialState: { query: '' },
   actions: {}, dataSources: {}, root: { id: 'root', type: 'page' } });
 const definition = (): ApplicationDefinition => ({ id: 'app', initialState: {}, dataSources: {}, actions: {},
-  shell: { id: 'outlet', type: 'route-outlet' }, routes: [], views: {}, viewSource: source });
+  shell: { id: 'outlet', type: 'route-outlet' }, viewSource: source });
 const apps: ApplicationRuntime[] = [];
 afterEach(() => apps.splice(0).forEach(scope => scope.dispose()));
 function setup(transport: ApiTransport = vi.fn(async () => view())) {
   const environment = new RuntimeEnvironment(vi.fn(), vi.fn(), transport);
   const scope = new ApplicationRuntime(definition(), environment); apps.push(scope);
-  return { scope, environment, loader: new ViewSchemaLoader({}), transport };
+  return { scope, environment, loader: new ViewSchemaLoader(), transport };
 }
 function deferred() {
   let resolve!: (value: unknown) => void;
@@ -104,16 +104,21 @@ describe('remote ViewSchemaLoader', () => {
     await lease.promise;
     expect(transport.mock.calls[0][0].query).toEqual({ app: undefined, path: '/screen' }); lease.release();
   });
-  it('validates remote source declarations and preserves bundled application contracts', () => {
+  it('requires a remote source and rejects removed bundled application contracts', () => {
     expect(() => validateApplicationDefinition(definition(), registry)).not.toThrow();
     for (const viewSource of [
       { ...source, pathQueryParam: '__proto__' }, { ...source, pathQueryParam: '' },
       { request: { path: 'https://example.com/schema' } }, { ...source, cache: 'view' },
       { ...source, onLoaded: 'missing' },
     ]) expect(() => validateApplicationDefinition({ ...definition(), viewSource } as ApplicationDefinition, registry)).toThrow();
-    expect(() => validateApplicationDefinition({ ...definition(), routes: [{ path: 'x', viewId: 'x' }], views: { x: view('x') } }, registry)).toThrow('viewSource or bundled');
-    const bundled = { ...definition(), viewSource: undefined, routes: [{ path: 'x', viewId: 'x' }], views: { x: view('x') } };
-    expect(() => validateApplicationDefinition(bundled, registry)).not.toThrow();
-    expect(new ViewSchemaLoader(bundled.views).load('x')).toBe(bundled.views.x);
+    for (const property of ['routes', 'views']) {
+      const obsolete = { ...definition(), [property]: property === 'routes' ? [] : {} };
+      expect(() => validateApplicationDefinition(obsolete, registry)).toThrow('Application.' + property + ' is not supported');
+    }
+    for (const viewSource of [undefined, null, {}]) {
+      expect(() => validateApplicationDefinition({ ...definition(), viewSource } as unknown as ApplicationDefinition, registry)).toThrow();
+    }
+    const bundled = { ...definition(), routes: [{ path: 'x', viewId: 'x' }], views: { x: view('x') } };
+    expect(() => validateApplicationDefinition(bundled, registry)).toThrow('Application.routes is not supported');
   });
 });

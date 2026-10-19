@@ -58,7 +58,7 @@ describe('SchemaFragmentManager', () => {
   });
   it('preserves application-source cache across view changes and clears it with the application', async () => {
     const { runtime, environment, validate } = setup();
-    const app: ApplicationDefinition = { id: 'host', initialState: {}, dataSources: {}, actions: {}, schemaSources: { shared: { request: { path: '/api/ui/shared' }, load: { strategy: 'onDemand', cache: 'application' } } }, shell: fragment, routes: [], views: {} };
+    const app: ApplicationDefinition = { id: 'host', initialState: {}, dataSources: {}, actions: {}, schemaSources: { shared: { request: { path: '/api/ui/shared' }, load: { strategy: 'onDemand', cache: 'application' } } }, shell: fragment, viewSource: { request: { path: "/api/ui/views" } } };
     const host = new ApplicationRuntime(app, environment); runtimes.push(host);
     const lease = host.schemaFragments.acquire('shared', null, validate); await lease.promise; lease.release();
     runtime.dispose(); const next = new ViewRuntime(definition(), environment); runtimes.push(next);

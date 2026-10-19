@@ -1,12 +1,24 @@
 {
   "id": "playground-application",
-  "initialState": { "name": "Schema Runtime Playground" },
+  "initialState": {
+    "name": "Schema Runtime Playground"
+  },
   "dataSources": {},
   "actions": {},
   "shell": {
     "id": "application-shell",
     "type": "page",
-    "children": [{ "id": "outlet", "type": "route-outlet" }]
+    "children": [
+      {
+        "id": "outlet",
+        "type": "route-outlet"
+      }
+    ]
   },
-  "routes": [{ "path": "/", "viewId": "hello-runtime" }]
+  "viewSource": {
+    "request": {
+      "method": "GET",
+      "path": "/api/ui/views"
+    }
+  }
 }

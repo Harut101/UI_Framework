@@ -2,8 +2,7 @@ import { readScopedPath } from '../../runtime/shared/scopeAddress';
 import type { RuntimeEnvironment } from '../../runtime/shared/RuntimeEnvironment';
 import type { RuntimeScope } from '../../runtime/shared/RuntimeScope';
 import type { DataEntry, DependencyRegistration } from '../../runtime/shared/types';
-import type { ApplicationDefinition } from '../../runtime/application/types';
-import type { RuntimeState, Scope, ScopedChangedPath, TraceEntry } from '../../runtime/shared/types';
+import type { RuntimeState, ScopedChangedPath, TraceEntry } from '../../runtime/shared/types';
 
 export function schemaId(instance: string | null | undefined): string | null {
   if (!instance) return null;
@@ -11,23 +10,13 @@ export function schemaId(instance: string | null | undefined): string | null {
   return separator < 0 ? instance : instance.slice(0, separator);
 }
 
-export function inspectDatasources(application: ApplicationDefinition, state: RuntimeState, environment?: RuntimeEnvironment) {
-  if (environment) return environment.listScopes().flatMap(runtime => {
+export function inspectDatasources(environment: RuntimeEnvironment, state: RuntimeState) {
+  return environment.listScopes().flatMap(runtime => {
     const data = readScopedPath(state, { scopeId: runtime.scopeId, area: 'data', path: [] }) as Record<string, DataEntry> | undefined;
     return Object.entries(runtime.dataSources.listDefinitions()).map(([id, definition]) => ({
       key: `${runtime.scopeId}:${id}`, scope: runtime.scope, scopeId: runtime.scopeId, id, definition, entry: data?.[id], dependencies: definition.dependsOn ?? [],
     }));
   });
-  const viewId = schemaId(state.viewInstance);
-  const view = viewId && Object.hasOwn(application.views, viewId) ? application.views[viewId] : undefined;
-  return [
-    { scope: 'app' as Scope, definitions: application.dataSources, data: state.appData },
-    { scope: 'view' as Scope, definitions: view?.dataSources ?? {}, data: state.viewData },
-  ].flatMap(({ scope, definitions, data }) => Object.entries(definitions).map(([id, definition]) => ({
-    key: `${scope}:${id}`, scope, scopeId: scope === 'app' ? state.applicationInstance : state.viewInstance, id, definition, entry: data[id],
-    // DependencyGraph is constructed from these declarations. This projection is read-only.
-    dependencies: definition.dependsOn ?? [],
-  })));
 }
 
 export function actionLogEntries(entries: readonly TraceEntry[]) {

@@ -36,7 +36,7 @@ export type {
 } from "../datasource/types";
 export type { ApplicationDefinition } from "../application/types";
 export type { ViewDefinition } from "../view/types";
-export type { RouteDefinition } from "../routing/types";
+export type { ViewSourceDefinition } from "../routing/types";
 
 export type { SchemaSourceDefinition } from "../schema/types";
 export interface RuntimeScopeDefinition {

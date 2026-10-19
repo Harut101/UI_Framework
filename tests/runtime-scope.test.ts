@@ -22,7 +22,7 @@ function definition(id = 'shared'): RuntimeScopeDefinition {
 const environments: RuntimeEnvironment[] = [];
 function setup(transport: ApiTransport = vi.fn(async () => ({ items: [] }))) {
   const environment = new RuntimeEnvironment(vi.fn(), vi.fn(), transport); environments.push(environment);
-  const app = new ApplicationRuntime({ ...definition('application'), shell: { id: 'shell', type: 'page' }, routes: [], views: {} }, environment);
+  const app = new ApplicationRuntime({ ...definition('application'), shell: { id: 'shell', type: 'page' }, viewSource: { request: { path: "/api/ui/views" } } }, environment);
   const viewDefinition: ViewDefinition = { ...definition('view'), title: 'View', root: { id: 'page', type: 'page' } };
   const view = new ViewRuntime(viewDefinition, environment);
   const fragment = (parent = view as RuntimeScope, schema = definition()) => new RuntimeScope(schema, 'fragment', environment, parent);
@@ -94,7 +94,7 @@ describe('RuntimeScope identity and hierarchy', () => {
     const bootstrap = view.applicationScope; const store = environment.store;
     const child = new RuntimeScope(definition(), 'fragment', environment, view);
     await view.actionEngine.execute('set', { event: { value: 'edited' } });
-    const app = new ApplicationRuntime({ ...definition('real'), shell: { id: 'shell', type: 'page' }, routes: [], views: {} }, environment);
+    const app = new ApplicationRuntime({ ...definition('real'), shell: { id: 'shell', type: 'page' }, viewSource: { request: { path: "/api/ui/views" } } }, environment);
     expect(bootstrap.active()).toBe(false); expect(environment.getScope(bootstrap.scopeId)).toBeUndefined();
     expect(view.parentScope).toBe(app); expect(child.applicationScope).toBe(app); expect(view.active()).toBe(true);
     expect(environment.store).toBe(store); expect(store.getState().viewState.value).toBe('edited');
