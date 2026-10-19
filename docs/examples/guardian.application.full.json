@@ -1,0 +1,166 @@
+{
+  "id": "guardian-reporting",
+  "initialState": {
+    "brand": "Cayosoft",
+    "breadcrumbs": [
+      "Guardian",
+      "Reporting",
+      "Browse all reports"
+    ],
+    "selectedNavigationId": "reporting.catalog",
+    "navigationCollapsed": false,
+    "navigation": {
+      "expandedIds": [
+        "reporting"
+      ]
+    },
+    "currentPath": "",
+    "navigationCaption": "GUARDIAN WORKSPACE",
+    "navigationFooter": "Demo workspace"
+  },
+  "dataSources": {
+    "navigation": {
+      "type": "api",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/navigation"
+      },
+      "load": {
+        "strategy": "onAppInit"
+      }
+    },
+    "me": {
+      "type": "api",
+      "request": {
+        "method": "GET",
+        "path": "/api/me"
+      },
+      "load": {
+        "strategy": "onAppInit"
+      }
+    }
+  },
+  "actions": {
+    "rememberNavigation": {
+      "type": "state.set",
+      "target": "selectedNavigationId",
+      "value": "$event.value"
+    },
+    "navigateToSelection": {
+      "type": "navigate",
+      "to": "$event.href"
+    },
+    "selectNavigation": {
+      "type": "sequence",
+      "actions": [
+        "rememberNavigation",
+        "navigateToSelection"
+      ]
+    },
+    "toggleNavigation": {
+      "type": "state.set",
+      "target": "navigationCollapsed",
+      "value": "$event.value"
+    },
+    "retryNavigation": {
+      "type": "datasource.reload",
+      "source": "navigation"
+    },
+    "selectDemoContext": {
+      "type": "state.patch",
+      "value": {
+        "breadcrumbs": "$event.breadcrumbs"
+      }
+    },
+    "setNavigationExpansion": {
+      "target": "navigation.expandedIds",
+      "value": "$event.value",
+      "type": "state.set"
+    },
+    "rememberView": {
+      "type": "state.patch",
+      "value": {
+        "currentPath": "$event.pathname",
+        "breadcrumbs": [
+          "Guardian",
+          "$event.title"
+        ]
+      }
+    }
+  },
+  "shell": {
+    "id": "application",
+    "type": "application-shell",
+    "bindings": {
+      "navigationCollapsed": "$appState.navigationCollapsed"
+    },
+    "children": [
+      {
+        "id": "application-header",
+        "type": "application-header",
+        "bindings": {
+          "brand": "$appState.brand",
+          "breadcrumbs": {
+            "source": "$appState.breadcrumbs",
+            "default": []
+          },
+          "user": {
+            "source": "$appData.me.data.user",
+            "default": null
+          },
+          "navigationCollapsed": "$appState.navigationCollapsed"
+        },
+        "handlers": {
+          "onToggleNavigation": {
+            "action": "toggleNavigation"
+          }
+        }
+      },
+      {
+        "id": "primary-navigation",
+        "type": "data-tree",
+        "bindings": {
+          "items": {
+            "source": "$appData.navigation.data.items",
+            "default": []
+          },
+          "selectedId": "$appState.selectedNavigationId",
+          "loading": "$appData.navigation.loading",
+          "error": "$appData.navigation.error",
+          "expandedIds": "$appState.navigation.expandedIds",
+          "selectedHref": "$appState.currentPath",
+          "caption": "$appState.navigationCaption",
+          "footerText": "$appState.navigationFooter"
+        },
+        "handlers": {
+          "onSelect": {
+            "action": "selectNavigation"
+          },
+          "onRetry": {
+            "action": "retryNavigation"
+          },
+          "onExpandedChange": {
+            "action": "setNavigationExpansion"
+          }
+        },
+        "props": {
+          "component": "primary-navigation"
+        }
+      },
+      {
+        "id": "application-route-outlet",
+        "type": "route-outlet"
+      }
+    ]
+  },
+  "routes": [],
+  "views": {},
+  "viewSource": {
+    "request": {
+      "method": "GET",
+      "path": "/api/ui/views"
+    },
+    "pathQueryParam": "path",
+    "onLoaded": "rememberView"
+  }
+}

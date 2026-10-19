@@ -1,4 +1,4 @@
-import type { RuntimeScope } from '../shared/RuntimeScope';
+import type { RuntimeScope } from "../shared/RuntimeScope";
 import type { RequestDefinition } from "../datasource/types";
 import type { JsonObject, JsonValue } from "../shared/json";
 export type ActionDefinition =
@@ -31,4 +31,3 @@ export interface ExecutionContext {
 export interface ScopedExecutionContext extends ExecutionContext {
   readonly scope: RuntimeScope;
 }
-

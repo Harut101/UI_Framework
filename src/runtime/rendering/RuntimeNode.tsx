@@ -10,7 +10,9 @@ export const RuntimeContext = createContext<{
   runtime: RuntimeScope;
   registry: ComponentRegistry;
 } | null>(null);
-export const NodeDefinitionContext = createContext<ComponentDefinition | null>(null);
+export const NodeDefinitionContext = createContext<ComponentDefinition | null>(
+  null,
+);
 const binder = new ComponentBinder();
 export const RuntimeNode = memo(function RuntimeNode({
   definition,
@@ -25,13 +27,23 @@ export const RuntimeNode = memo(function RuntimeNode({
     [runtime],
   );
   const selectBindings = useMemo(
-    () => bindingEngine.createSelector(definition.bindings, runtime, definition.visibility),
+    () =>
+      bindingEngine.createSelector(
+        definition.bindings,
+        runtime,
+        definition.visibility,
+      ),
     [bindingEngine, definition.bindings, definition.visibility, runtime],
   );
   const bound = useSelector(selectBindings, shallowEqual);
   const props = useMemo(
     () => binder.bind(definition, runtime.actionEngine, runtime),
     [definition, runtime],
+  );
+  // A valid callback must remain a callback even for programmatic, unvalidated trees.
+  const callbacks = useMemo(
+    () => Object.fromEntries(Object.keys(definition.handlers ?? {}).map(prop => [prop, props[prop]])),
+    [definition.handlers, props],
   );
   const Component = registry.get(definition.type);
   const children = useMemo(
@@ -44,9 +56,10 @@ export const RuntimeNode = memo(function RuntimeNode({
   if (!bound.__visible) return null;
   const { __visible: _visible, ...bindings } = bound;
   return (
-    <NodeDefinitionContext.Provider value={definition}><Component {...props} {...bindings}>
-      {children}
-    </Component></NodeDefinitionContext.Provider>
+    <NodeDefinitionContext.Provider value={definition}>
+      <Component {...props} {...bindings} {...callbacks}>
+        {children}
+      </Component>
+    </NodeDefinitionContext.Provider>
   );
 });
-

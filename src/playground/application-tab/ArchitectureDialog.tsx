@@ -1,24 +1,221 @@
-import {Dialog,DialogSurface,DialogBody,DialogTitle,DialogContent,DialogActions,Button} from '@fluentui/react-components';
-import { Icon } from '../../components/icons';
-import './inspector.css';
+import {
+  Dialog,
+  DialogSurface,
+  DialogBody,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from "@fluentui/react-components";
+import { Icon } from "../../components/icons";
+import "./inspector.css";
 
-const uiFlow = ['UI event', 'Generated handler callback', 'ActionEngine', 'Redux state', 'React-Redux subscription', 'BindingEngine selector', 'RuntimeNode → component props'];
-const dataFlow = ['Redux state change', 'listenerMiddleware', 'DependencyGraph', 'DataSourceManager', 'Backend', 'Redux data', 'React-Redux → UI rerender'];
+const uiFlow = [
+  "UI event",
+  "Generated handler callback",
+  "ActionEngine",
+  "Redux state",
+  "React-Redux subscription",
+  "BindingEngine selector",
+  "RuntimeNode → component props",
+];
+const dataFlow = [
+  "Redux state change",
+  "listenerMiddleware",
+  "DependencyGraph",
+  "DataSourceManager",
+  "Backend",
+  "Redux data",
+  "React-Redux → UI rerender",
+];
 function Flow({ steps, label }: { steps: string[]; label: string }) {
-  return <ol className="architecture-flow" aria-label={label}>{steps.map((step, index) => <li key={step}><span>{step}</span>{index < steps.length - 1 && <Icon name="arrow" size={13} aria-hidden="true"/>}</li>)}</ol>;
+  return (
+    <ol className="architecture-flow" aria-label={label}>
+      {steps.map((step, index) => (
+        <li key={step}>
+          <span>{step}</span>
+          {index < steps.length - 1 && (
+            <Icon name="arrow" size={13} aria-hidden="true" />
+          )}
+        </li>
+      ))}
+    </ol>
+  );
 }
 
 export function ArchitectureDialog({ onClose }: { onClose: () => void }) {
-  return <Dialog open onOpenChange={(_,data)=>{if(!data.open)onClose();}}><DialogSurface className="architecture-dialog"><DialogBody>
-      <DialogTitle>Runtime architecture</DialogTitle><DialogContent><span className="tooling-label">PLAYGROUND TOOLING</span>
-      <div className="architecture-dialog-body">
-        <p className="architecture-intro">One runtime turns JSON composition and wiring into ordinary React props and callbacks. Reports and Users share the same infrastructure and navigation implementation.</p>
-        <section><h3>1. UI reaction</h3><Flow steps={uiFlow} label="UI reaction flow"/><p>ComponentBinder creates callback props that reference named actions. ActionEngine finds the action definition and its generic handler. State handlers dispatch to the owning Redux scope. React-Redux runs BindingEngine selectors, and RuntimeNode passes updated values to the registered component.</p></section>
-        <section><h3>2. Datasource side effects</h3><Flow steps={dataFlow} label="Datasource side effect flow"/><p>Listener middleware produces scope-qualified changed paths. DependencyGraph identifies affected scopeId/sourceId resources. DataSourceManager applies load policy, deduplicates matches, debounces changes, cancels stale requests, and writes loading/success/error data. React-Redux subscriptions drive the resulting UI update.</p></section>
-        <section><h3>3. Dynamic schema loading</h3><Flow steps={['Application / View / Fragment schema', 'SchemaOutlet enabled + key', 'SchemaFragmentManager', 'Backend HTTP or cached JSON', 'FragmentDefinition / legacy tree', 'Scoped activation', 'Same RuntimeNode + ComponentRegistry', 'React components']} label="Dynamic schema loading flow"/><p>Data sources return data for known UI. Schema sources return an unknown component subtree. SchemaOutlet loads on demand and cancels obsolete requests. Definition caching reuses JSON only; activation/outlet scope lifetime independently controls local state and registrations. Parent disposal always recursively ends child scopes. The internal schemaFragments slice has no public expression namespace. RouteOutlet mounts a complete ViewRuntime. SchemaOutlet activates explicit FragmentDefinitions in child scopes and keeps legacy bare trees in the host scope.</p></section>
-        <section><h3>4. Dynamic navigation data</h3><Flow steps={['Backend parent links', 'Node-local childrenSource', 'DataSourceManager', 'Redux data', 'DataTreeRuntime merge/order', 'PrimaryNavigation props']} label="Navigation data flow"/><p>Static children, remote children and hybrid children share one data pipeline. Navigation items are data for known UI; they do not use SchemaOutlet. PrimaryNavigation receives controlled props and callbacks and performs no loading or merging.</p></section><section className="architecture-contracts"><h3>Four schema contracts</h3><dl><div><dt>bindings</dt><dd><strong>Reactive props</strong><code>items ← $data.source.data.items</code></dd></div><div><dt>visibility</dt><dd><strong>Reactive render condition</strong><code>visibility: "$state.ui.showAdvancedFilters"</code></dd></div><div><dt>handlers</dt><dd><strong>Callbacks → named actions</strong><code>onSelect → selectItem</code></dd></div><div><dt>dependsOn</dt><dd><strong>Datasource lifecycle dependency</strong><code>$state.filters.category → source</code></dd></div></dl></section>
-        <section><h3>One store, scoped namespaces</h3><div className="architecture-scopes"><p><strong>ApplicationRuntime</strong><code>$appState → appState</code><code>$appData → appData</code><span>Shell state and data survive view changes.</span></p><p><strong>ViewRuntime</strong><code>$state → viewState</code><code>$data → viewData</code><code>$viewState / $viewData → owning view</code><span>A changed view disposes its descendants and initializes fresh state/data.</span></p><p><strong>FragmentRuntime</strong><code>$state → fragments[scopeId].state</code><code>$data → fragments[scopeId].data</code><span>Every envelope activation owns independent state, actions, data and dependencies. Nested fragments inherit explicit application/view read addresses.</span></p></div><p>All three use the same application Redux store. Named actions resolve only in their current scope. $event and $response are execution context, not persistent state namespaces.</p></section>
-        <p className="architecture-boundary">Business components receive ordinary props and callbacks. The inspector, comparison, and this modal are playground tools; runtime execution does not import or depend on them.</p>
-      </div></DialogContent><DialogActions><Button onClick={onClose} aria-label="Close architecture">Close</Button></DialogActions></DialogBody></DialogSurface></Dialog>;
+  return (
+    <Dialog
+      open
+      onOpenChange={(_, data) => {
+        if (!data.open) onClose();
+      }}
+    >
+      <DialogSurface className="architecture-dialog">
+        <DialogBody>
+          <DialogTitle>Runtime architecture</DialogTitle>
+          <DialogContent>
+            <span className="tooling-label">PLAYGROUND TOOLING</span>
+            <div className="architecture-dialog-body">
+              <p className="architecture-intro">
+                One runtime turns JSON composition and wiring into ordinary
+                React props and callbacks. Reports and Users share the same
+                infrastructure and navigation implementation.
+              </p>
+              <section>
+                <h3>1. UI reaction</h3>
+                <Flow steps={uiFlow} label="UI reaction flow" />
+                <p>
+                  ComponentBinder creates callback props that reference named
+                  actions. ActionEngine finds the action definition and its
+                  generic handler. State handlers dispatch to the owning Redux
+                  scope. React-Redux runs BindingEngine selectors, and
+                  RuntimeNode passes updated values to the registered component.
+                </p>
+              </section>
+              <section>
+                <h3>2. Datasource side effects</h3>
+                <Flow steps={dataFlow} label="Datasource side effect flow" />
+                <p>
+                  Listener middleware produces scope-qualified changed paths.
+                  DependencyGraph identifies affected scopeId/sourceId
+                  resources. DataSourceManager applies load policy, deduplicates
+                  matches, debounces changes, cancels stale requests, and writes
+                  loading/success/error data. React-Redux subscriptions drive
+                  the resulting UI update.
+                </p>
+              </section>
+              <section>
+                <h3>3. Dynamic schema loading</h3>
+                <Flow
+                  steps={[
+                    "Application / View / Fragment schema",
+                    "SchemaOutlet enabled + key",
+                    "SchemaFragmentManager",
+                    "Backend HTTP or cached JSON",
+                    "FragmentDefinition / legacy tree",
+                    "Scoped activation",
+                    "Same RuntimeNode + ComponentRegistry",
+                    "React components",
+                  ]}
+                  label="Dynamic schema loading flow"
+                />
+                <p>
+                  Data sources return data for known UI. Schema sources return
+                  an unknown component subtree. SchemaOutlet loads on demand and
+                  cancels obsolete requests. Definition caching reuses JSON
+                  only; activation/outlet scope lifetime independently controls
+                  local state and registrations. Parent disposal always
+                  recursively ends child scopes. The internal schemaFragments
+                  slice has no public expression namespace. RouteOutlet mounts a
+                  complete ViewRuntime. SchemaOutlet activates explicit
+                  FragmentDefinitions in child scopes and keeps legacy bare
+                  trees in the host scope.
+                </p>
+              </section>
+              <section>
+                <h3>4. Dynamic navigation data</h3>
+                <Flow
+                  steps={[
+                    "Backend parent links",
+                    "Node-local childrenSource",
+                    "DataSourceManager",
+                    "Redux data",
+                    "DataTreeRuntime merge/order",
+                    "PrimaryNavigation props",
+                  ]}
+                  label="Navigation data flow"
+                />
+                <p>
+                  Static children, remote children and hybrid children share one
+                  data pipeline. Navigation items are data for known UI; they do
+                  not use SchemaOutlet. PrimaryNavigation receives controlled
+                  props and callbacks and performs no loading or merging.
+                </p>
+              </section>
+              <section className="architecture-contracts">
+                <h3>Four schema contracts</h3>
+                <dl>
+                  <div>
+                    <dt>bindings</dt>
+                    <dd>
+                      <strong>Reactive props</strong>
+                      <code>items ← $data.source.data.items</code>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>visibility</dt>
+                    <dd>
+                      <strong>Reactive render condition</strong>
+                      <code>visibility: "$state.ui.showAdvancedFilters"</code>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>handlers</dt>
+                    <dd>
+                      <strong>Callbacks → named actions</strong>
+                      <code>onSelect → selectItem</code>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>dependsOn</dt>
+                    <dd>
+                      <strong>Datasource lifecycle dependency</strong>
+                      <code>$state.filters.category → source</code>
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+              <section>
+                <h3>One store, scoped namespaces</h3>
+                <div className="architecture-scopes">
+                  <p>
+                    <strong>ApplicationRuntime</strong>
+                    <code>$appState → appState</code>
+                    <code>$appData → appData</code>
+                    <span>Shell state and data survive view changes.</span>
+                  </p>
+                  <p>
+                    <strong>ViewRuntime</strong>
+                    <code>$state → viewState</code>
+                    <code>$data → viewData</code>
+                    <code>$viewState / $viewData → owning view</code>
+                    <span>
+                      A changed view disposes its descendants and initializes
+                      fresh state/data.
+                    </span>
+                  </p>
+                  <p>
+                    <strong>FragmentRuntime</strong>
+                    <code>$state → fragments[scopeId].state</code>
+                    <code>$data → fragments[scopeId].data</code>
+                    <span>
+                      Every envelope activation owns independent state, actions,
+                      data and dependencies. Nested fragments inherit explicit
+                      application/view read addresses.
+                    </span>
+                  </p>
+                </div>
+                <p>
+                  All three use the same application Redux store. Named actions
+                  resolve only in their current scope. $event and $response are
+                  execution context, not persistent state namespaces.
+                </p>
+              </section>
+              <p className="architecture-boundary">
+                Business components receive ordinary props and callbacks. The
+                inspector, comparison, and this modal are playground tools;
+                runtime execution does not import or depend on them.
+              </p>
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onClose} aria-label="Close architecture">
+              Close
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
 }
-

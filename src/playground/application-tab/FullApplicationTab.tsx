@@ -2,9 +2,9 @@ import {Select} from '../../components/primitive/Select';
 import {Notice} from '../ui/Notice';
 import {Disclosure} from '../ui/Disclosure';
 import { Button as ToolButton, Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent, DialogActions, useRestoreFocusTarget } from '@fluentui/react-components';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Provider } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '../../components/icons';
 import { ApplicationRuntime } from '../../runtime/application/ApplicationRuntime';
 import { ApplicationHost } from '../../runtime/application/ApplicationHost';
@@ -14,12 +14,13 @@ import { reportingApplicationDefinition } from '../../schemas/reporting';
 import { PreviewErrorBoundary } from '../schema-tab/PreviewErrorBoundary';
 import { DeveloperRuntimeInspector } from './DeveloperRuntimeInspector';
 import { ArchitectureDialog } from './ArchitectureDialog';
-import { demoApplicationDefinition, demoCatalogs, type DemoCatalogId } from './demoCatalogs';
+import { demoCatalogs } from './demoCatalogs';
 import { SchemaComparison } from './SchemaComparison';
 import './application.css';
 
 export function FullApplicationTab({ registry }: { registry: ComponentRegistry }) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const restoreArchitectureFocus = useRestoreFocusTarget();
   const navigateRef = useRef(navigate); navigateRef.current = navigate;
   const [notice, setNotice] = useState<{ message: string; tone: string } | null>(null);
@@ -56,26 +57,27 @@ export function FullApplicationTab({ registry }: { registry: ComponentRegistry }
   const [architectureOpen, setArchitectureOpen] = useState(false);
   const closeArchitecture = useCallback(() => setArchitectureOpen(false), []);
   const [revision, setRevision] = useState(0);
-  const [demoId, setDemoId] = useState<DemoCatalogId>('reports');
-  const catalog = demoCatalogs.find(item => item.id === demoId)!;
-  const definition = useMemo(() => demoApplicationDefinition(catalog), [catalog]);
+  const catalog = demoCatalogs.find(item => item.href === pathname);
+  const demoId = catalog?.id ?? '';
+  const definition = reportingApplicationDefinition;
+  const activeView = useSyncExternalStore(environment.store.subscribe, () => environment.viewScope?.definition ?? null);
   useLayoutEffect(() => {
     const next = new ApplicationRuntime(reportingApplicationDefinition, environment);
     setRuntime(next); next.start();
     return () => next.dispose();
   }, [environment, revision]);
   const onError = useCallback((error: Error) => environment.diagnostics.trace('error', 'Application rendering failed', error.message), [environment]);
-  useLayoutEffect(() => {
-    if (!runtime) return;
-    void runtime.actionEngine.execute('selectDemoContext', { scope: runtime, event: { breadcrumbs: ['Guardian', 'Catalog workspace', catalog.definition.title] } });
-  }, [runtime, catalog]);
-  const source = useMemo(() => JSON.stringify(definition, null, 2), [definition]);
+  const source = useMemo(() => JSON.stringify({ application: definition, loadedView: activeView }, null, 2), [definition, activeView]);
+  const demoOptions = [
+    ...(!catalog && activeView ? [{ value: '', label: String('title' in activeView ? activeView.title : activeView.id), disabled: true }] : []),
+    ...demoCatalogs.map(item => ({ value: item.id, label: item.label })),
+  ];
   const selectDemo = (id: string) => {
     const next = demoCatalogs.find(item => item.id === id);
     if (!next || next.id === demoId) return;
-    setNotice(null); setDemoId(next.id);
+    setNotice(null); navigate(next.href);
   };
-  return <section className="full-application-tab"><div className="full-application-toolbar"><div><p className="eyebrow">03 / FULL APPLICATION</p><h1>Full Application</h1></div><span><Icon name="code" size={14}/>Generated from application + view schemas</span><ToolButton {...restoreArchitectureFocus} type="button" className="architecture-open" aria-haspopup="dialog" onClick={() => setArchitectureOpen(true)}><Icon name="workflow" size={14}/>Architecture</ToolButton><ToolButton type="button" aria-controls="full-runtime-inspector" aria-expanded={inspector} onClick={() => setInspector(!inspector)}><Icon name="panel" size={14}/>{inspector ? 'Hide runtime inspector' : 'Runtime inspector'}</ToolButton><ToolButton aria-keyshortcuts="Control+Alt+I" onClick={openLiveInspector}>Inspect live scopes · Ctrl+Alt+I</ToolButton></div><div className="schema-demo-controls"><div><Select label="Demo Schema" value={demoId} onChange={({value})=>selectDemo(value)} options={demoCatalogs.map(item=>({value:item.id,label:item.label}))}/></div><p>Playground tooling · one runtime, one registry, two view definitions.</p></div><SchemaComparison selectedId={demoId}/>{inspector && !liveInspector && <DeveloperRuntimeInspector environment={environment} application={definition} registry={registry}/>}<Provider store={environment.store}><PreviewErrorBoundary key={revision} resetKey={demoId} onError={onError} onRetry={() => setRevision(previous => previous + 1)}>{runtime && <ApplicationHost definition={definition} views={definition.views} environment={environment} runtime={runtime} registry={registry}/>}</PreviewErrorBoundary>{notice && <Notice message={notice.message} tone={notice.tone} onDismiss={()=>setNotice(null)}/>}{inspector && <Disclosure className="inspector-application-source" title="Application and view schema JSON"><pre>{source}</pre></Disclosure>}</Provider>{architectureOpen && <ArchitectureDialog onClose={closeArchitecture}/>}
+  return <section className="full-application-tab"><div className="full-application-toolbar"><div><p className="eyebrow">03 / FULL APPLICATION</p><h1>Full Application</h1></div><span><Icon name="code" size={14}/>Generated from application + view schemas</span><ToolButton {...restoreArchitectureFocus} type="button" className="architecture-open" aria-haspopup="dialog" onClick={() => setArchitectureOpen(true)}><Icon name="workflow" size={14}/>Architecture</ToolButton><ToolButton type="button" aria-controls="full-runtime-inspector" aria-expanded={inspector} onClick={() => setInspector(!inspector)}><Icon name="panel" size={14}/>{inspector ? 'Hide runtime inspector' : 'Runtime inspector'}</ToolButton><ToolButton aria-keyshortcuts="Control+Alt+I" onClick={openLiveInspector}>Inspect live scopes · Ctrl+Alt+I</ToolButton></div><div className="schema-demo-controls"><div><Select label="Demo Schema" value={demoId} onChange={({value})=>selectDemo(value)} options={demoOptions}/></div><p>Playground tooling · navigation URL → backend ViewDefinition → shared runtime.</p></div>{catalog && <SchemaComparison selectedId={catalog.id}/>}{inspector && !liveInspector && <DeveloperRuntimeInspector environment={environment} application={definition} registry={registry}/>}<Provider store={environment.store}><PreviewErrorBoundary key={revision} resetKey={pathname} onError={onError} onRetry={() => setRevision(previous => previous + 1)}>{runtime && <ApplicationHost definition={definition} views={definition.views} environment={environment} runtime={runtime} registry={registry}/>}</PreviewErrorBoundary>{notice && <Notice message={notice.message} tone={notice.tone} onDismiss={()=>setNotice(null)}/>}{inspector && <Disclosure className="inspector-application-source" title="Application and loaded View schema JSON"><pre>{source}</pre></Disclosure>}</Provider>{architectureOpen && <ArchitectureDialog onClose={closeArchitecture}/>}
     <Dialog open={liveInspector} surfaceMotion={{ onMotionFinish: (_, data) => { if (data.direction === 'exit') restoreInspectorFocus(); } }} onOpenChange={(_, data) => setLiveInspector(data.open)}><DialogSurface className="runtime-inspector-dialog" aria-label="Live Runtime Inspector"><DialogBody>
       <DialogTitle>Live Runtime Inspector</DialogTitle><DialogContent>{liveInspector && <DeveloperRuntimeInspector environment={environment} application={definition} registry={registry}/>}</DialogContent>
       <DialogActions><ToolButton onClick={() => setLiveInspector(false)}>Close live inspector</ToolButton></DialogActions>

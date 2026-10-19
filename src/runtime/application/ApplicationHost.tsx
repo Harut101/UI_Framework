@@ -26,12 +26,14 @@ export const ApplicationHost = memo(function ApplicationHost({
   const routeContext = useMemo(
     () => ({
       routes: definition.routes,
+      viewSource: definition.viewSource,
+      runtime,
       loader,
       environment,
       registry,
       revision,
     }),
-    [definition, loader, environment, registry, revision],
+    [definition, loader, environment, registry, revision, runtime],
   );
   const context = useMemo(() => ({ runtime, registry }), [runtime, registry]);
   return (

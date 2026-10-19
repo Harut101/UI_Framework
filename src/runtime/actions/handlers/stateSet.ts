@@ -1,6 +1,6 @@
-import { assertLocalStateTarget } from './stateTarget';
+import { assertLocalStateTarget } from "./stateTarget";
 import { runtimeActions } from "../../redux/runtimeActions";
-import { diagnosticDetail } from '../../shared/Diagnostics';
+import { diagnosticDetail } from "../../shared/Diagnostics";
 import type { ActionHandler } from "../ActionRegistry";
 export const stateSetActionHandler: ActionHandler<"state.set"> = (
   definition,
@@ -24,7 +24,14 @@ export const stateSetActionHandler: ActionHandler<"state.set"> = (
     "state",
     definition.target,
     diagnosticDetail(value),
-    { scope: scope.scope, instance: scope.scopeId, actionId: stack.at(-1), actionType: definition.type, target: definition.target, value, event: 'stateChanged' },
+    {
+      scope: scope.scope,
+      instance: scope.scopeId,
+      actionId: stack.at(-1),
+      actionType: definition.type,
+      target: definition.target,
+      value,
+      event: "stateChanged",
+    },
   );
 };
-

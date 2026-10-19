@@ -10,8 +10,9 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { transferableAbortController } from 'node:util';
 import type { Server } from 'node:http';
 import { app } from '../backend/app';
+import { reportingApplicationDefinition } from '../src/schemas/reporting';
 import { FullApplicationTab } from '../src/playground/application-tab/FullApplicationTab';
-import { demoApplicationDefinition, demoCatalogs, schemaComparisonSections } from '../src/playground/application-tab/demoCatalogs';
+import { demoCatalogs, schemaComparisonSections } from '../src/playground/application-tab/demoCatalogs';
 import { createComponentRegistry, registerApplicationComponents } from '../src/components/registry';
 import { GenericNavigation } from '../src/components/navigation/GenericNavigation';
 import { ApplicationShell } from '../src/components/application/ApplicationShell';
@@ -145,7 +146,7 @@ describe('same runtime and navigation, different JSON relationships', () => {
     expect(dropdown(container,'Demo Schema').textContent).toBe('Reports Catalog');
     expect(registry.get('user-card')).toBe(UserCard);
     for (const catalog of demoCatalogs) {
-      expect(() => validateApplicationDefinition(demoApplicationDefinition(catalog), registry)).not.toThrow();
+      expect(() => validateApplicationDefinition(reportingApplicationDefinition, registry)).not.toThrow();
       const sections = schemaComparisonSections(catalog.definition, catalog.navigationId, catalog.listId);
       const comparison = container.querySelector(`section[aria-label="${catalog.label} schema comparison"]`)!;
       expect([...comparison.querySelectorAll('pre')].map(pre => pre.textContent)).toEqual(sections.map(section => JSON.stringify(section.value, null, 2)));

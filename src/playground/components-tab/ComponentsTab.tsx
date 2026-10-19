@@ -1,39 +1,374 @@
-import {implementations} from './implementations';
-import {Badge,useRestoreFocusTarget,Table,TableHeader,TableBody,TableRow,TableHeaderCell,TableCell} from '@fluentui/react-components';
-import { Button as ToolButton } from '@fluentui/react-components';
-import { useMemo, useState } from 'react';
-import { Icon } from '../../components/icons';
-import type { ComponentRegistry } from '../../runtime/rendering/ComponentRegistry';
-import type { ComponentSchemaType } from '../../components/registry';
-import type { ValueChange } from '../../components/types';
-import { catalogEntries } from './catalog';
-import { ComponentPreview } from './ComponentPreview';
-import type { CatalogCategory, CatalogEntry } from './types';
-import './catalog.css';
-const categories: CatalogCategory[] = ['Primitives', 'Layout', 'Navigation & data', 'Reporting', 'Users'];
-const categoryIcons = { Primitives: 'cursor', Layout: 'layers', 'Navigation & data': 'navigation', Reporting: 'document', Users: 'users' };
-function CodeExample({ title, source, copyLabel }: { title: string; source: string; copyLabel: string }) {
+import { implementations } from "./implementations";
+import {
+  Badge,
+  useRestoreFocusTarget,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHeaderCell,
+  TableCell,
+} from "@fluentui/react-components";
+import { Button as ToolButton } from "@fluentui/react-components";
+import { useMemo, useState } from "react";
+import { Icon } from "../../components/icons";
+import type { ComponentRegistry } from "../../runtime/rendering/ComponentRegistry";
+import type { ComponentSchemaType } from "../../components/registry";
+import type { ValueChange } from "../../components/types";
+import { catalogEntries } from "./catalog";
+import { ComponentPreview } from "./ComponentPreview";
+import type { CatalogCategory, CatalogEntry } from "./types";
+import "./catalog.css";
+const categories: CatalogCategory[] = [
+  "Primitives",
+  "Layout",
+  "Navigation & data",
+  "Reporting",
+  "Users",
+];
+const categoryIcons = {
+  Primitives: "cursor",
+  Layout: "layers",
+  "Navigation & data": "navigation",
+  Reporting: "document",
+  Users: "users",
+};
+function CodeExample({
+  title,
+  source,
+  copyLabel,
+}: {
+  title: string;
+  source: string;
+  copyLabel: string;
+}) {
   const [copied, setCopied] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const copy = async () => {
-    try { await navigator.clipboard.writeText(source); setCopied(true); setError(''); }
-    catch { setError('Clipboard unavailable. Select the example text to copy it.'); }
+    try {
+      await navigator.clipboard.writeText(source);
+      setCopied(true);
+      setError("");
+    } catch {
+      setError("Clipboard unavailable. Select the example text to copy it.");
+    }
   };
-  return <div className="catalog-code-example"><div><span>{title}</span><ToolButton appearance="subtle" type="button" aria-label={copyLabel} onClick={() => { void copy(); }}>{copied ? <Icon name="check" size={14}/> : <Icon name="copy" size={14}/>} {copied ? 'Copied' : 'Copy'}</ToolButton></div><pre><code>{source}</code></pre>{error && <p role="status">{error}</p>}</div>;
+  return (
+    <div className="catalog-code-example">
+      <div>
+        <span>{title}</span>
+        <ToolButton
+          appearance="subtle"
+          type="button"
+          aria-label={copyLabel}
+          onClick={() => {
+            void copy();
+          }}
+        >
+          {copied ? (
+            <Icon name="check" size={14} />
+          ) : (
+            <Icon name="copy" size={14} />
+          )}{" "}
+          {copied ? "Copied" : "Copy"}
+        </ToolButton>
+      </div>
+      <pre>
+        <code>{source}</code>
+      </pre>
+      {error && <p role="status">{error}</p>}
+    </div>
+  );
 }
 function Contract({ entry }: { entry: CatalogEntry }) {
-  return <div className="catalog-contract"><section><h3>Public props <span>{Object.keys(entry.props).length}</span></h3><div className="catalog-table-scroll"><Table><TableHeader><TableRow><TableHeaderCell>Prop</TableHeaderCell><TableHeaderCell>Type</TableHeaderCell><TableHeaderCell>Contract</TableHeaderCell></TableRow></TableHeader><TableBody>{Object.entries(entry.props).map(([name, prop]) => <TableRow key={name}><TableCell><code>{name}</code>{prop.required && <span className="catalog-required">Required</span>}</TableCell><TableCell><code>{prop.type}</code></TableCell><TableCell>{prop.description}{prop.defaultValue !== undefined && <small>Default: <code>{prop.defaultValue}</code></small>}</TableCell></TableRow>)}</TableBody></Table></div></section><section><h3>Callback props <span>{Object.keys(entry.callbacks).length}</span></h3>{Object.keys(entry.callbacks).length ? <div className="catalog-table-scroll"><Table><TableHeader><TableRow><TableHeaderCell>Callback</TableHeaderCell><TableHeaderCell>Signature & behavior</TableHeaderCell></TableRow></TableHeader><TableBody>{Object.entries(entry.callbacks).map(([name, callback]) => <TableRow key={name}><TableCell><code>{name}</code></TableCell><TableCell><code>{callback.signature}</code><small>{callback.description}</small></TableCell></TableRow>)}</TableBody></Table></div> : <p className="catalog-no-callbacks">This component exposes no callback props.</p>}</section></div>;
+  return (
+    <div className="catalog-contract">
+      <section>
+        <h3>
+          Public props <span>{Object.keys(entry.props).length}</span>
+        </h3>
+        <div className="catalog-table-scroll">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHeaderCell>Prop</TableHeaderCell>
+                <TableHeaderCell>Type</TableHeaderCell>
+                <TableHeaderCell>Contract</TableHeaderCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Object.entries(entry.props).map(([name, prop]) => (
+                <TableRow key={name}>
+                  <TableCell>
+                    <code>{name}</code>
+                    {prop.required && (
+                      <span className="catalog-required">Required</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <code>{prop.type}</code>
+                  </TableCell>
+                  <TableCell>
+                    {prop.description}
+                    {prop.defaultValue !== undefined && (
+                      <small>
+                        Default: <code>{prop.defaultValue}</code>
+                      </small>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </section>
+      <section>
+        <h3>
+          Callback props <span>{Object.keys(entry.callbacks).length}</span>
+        </h3>
+        {Object.keys(entry.callbacks).length ? (
+          <div className="catalog-table-scroll">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHeaderCell>Callback</TableHeaderCell>
+                  <TableHeaderCell>Signature & behavior</TableHeaderCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(entry.callbacks).map(([name, callback]) => (
+                  <TableRow key={name}>
+                    <TableCell>
+                      <code>{name}</code>
+                    </TableCell>
+                    <TableCell>
+                      <code>{callback.signature}</code>
+                      <small>{callback.description}</small>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <p className="catalog-no-callbacks">
+            This component exposes no callback props.
+          </p>
+        )}
+      </section>
+    </div>
+  );
 }
 export function ComponentsTab({ registry }: { registry: ComponentRegistry }) {
-  const restorePreviewFocus=useRestoreFocusTarget();
-  const [query, setQuery] = useState('');
-  const [selectedType, setSelectedType] = useState<ComponentSchemaType>('button');
+  const restorePreviewFocus = useRestoreFocusTarget();
+  const [query, setQuery] = useState("");
+  const [selectedType, setSelectedType] =
+    useState<ComponentSchemaType>("button");
   const [revision, setRevision] = useState(0);
-  const entries = useMemo(() => catalogEntries.filter(entry => registry.has(entry.type)), [registry]);
-  const filtered = entries.filter(entry => `${entry.name} ${entry.type} ${entry.category} ${entry.description}`.toLowerCase().includes(query.toLowerCase().trim()));
-  const active = entries.find(entry => entry.type === selectedType) ?? entries[0];
-  const SearchInput = registry.get('search-input');
-  if (!active) return <section className="tab-content"><h1>Components</h1><p>No catalog components are registered.</p></section>;
-  return <section className="tab-content catalog-tab"><div className="catalog-page-heading"><div><p className="eyebrow">01 / COMPONENTS</p><h1>Components</h1><p className="intro">Reusable pieces. One shared library. Explore their contracts and make them your own.</p></div><Badge className="catalog-library-count" appearance="tint" color="brand" icon={<Icon name="layers"/>}>{entries.length} registered components</Badge></div><div className="catalog-layout"><aside className="catalog-sidebar"><SearchInput label="Search components" value={query} placeholder="Find a component…" onChange={({ value }: ValueChange<string>) => setQuery(value)}/><p className="catalog-result-count">{query.trim() ? `${filtered.length} matching components` : `${entries.length} components · ${categories.length} categories`}</p><nav aria-label="Component catalog">{categories.map(category => { const group = filtered.filter(entry => entry.category === category); const categoryIcon = categoryIcons[category]; return group.length ? <div className="catalog-category" key={category}><h2><Icon name={categoryIcon} size={13}/>{category}<span>{group.length}</span></h2>{group.map(entry => <ToolButton {...restorePreviewFocus} appearance="subtle" key={entry.type} type="button" aria-current={active.type === entry.type ? 'true' : undefined} className={active.type === entry.type ? 'selected' : ''} onClick={() => setSelectedType(entry.type)}><span>{entry.name}</span><Icon name="chevron" size={12}/></ToolButton>)}</div> : null; })}</nav>{!filtered.length && <div className="catalog-empty-search"><p>No components match “{query}”.</p><ToolButton type="button" onClick={() => setQuery('')}>Clear search</ToolButton></div>}<section className="catalog-sidebar-note"><div><h3>Runtime Infrastructure</h3><p><strong>RuntimeNode</strong> renders registered components and reactive props.</p><p><strong>RouteOutlet</strong> mounts a whole ViewDefinition for a route.</p><p><strong>DataTreeRuntime</strong> loads and merges child data for a known registered tree component.</p><p><strong>SchemaOutlet</strong> loads an unknown component subtree into the current runtime.</p></div></section><div className="catalog-sidebar-note"><Icon name="code" size={17}/><p>Every preview uses the same ComponentRegistry as schema-rendered views.</p></div></aside><article className="catalog-detail" aria-labelledby="catalog-component-name"><header className="catalog-component-heading"><div><span className="catalog-category-label">{active.category}</span><h2 id="catalog-component-name">{active.name}<Badge appearance="tint" color="brand">{active.type}</Badge></h2><p>{active.description}</p></div><span className="catalog-isolated-badge"><Icon name="check" size={12}/>Isolated component</span></header><section className="catalog-live-preview"><div className="catalog-section-heading"><h3><span className="live-dot"/>Live preview</h3><ToolButton type="button" onClick={() => setRevision(previous => previous + 1)}><Icon name="reset" size={13}/>Reset preview</ToolButton></div><ComponentPreview key={`${active.type}:${revision}`} entry={active} registry={registry}/></section><p className="catalog-implementation">Implementation: {implementations[active.type]}</p><Contract entry={active}/><section className="catalog-examples"><h3>Usage examples</h3><p>Use ordinary props in React. Declare bindings and named handlers in schema.</p><div className="catalog-example-grid"><CodeExample key={`${active.type}:react`} title="React" copyLabel="Copy React example" source={active.reactExample}/><div><CodeExample key={`${active.type}:schema`} title="Schema JSON" copyLabel="Copy schema example" source={JSON.stringify(active.schema, null, 2)}/>{Object.keys(active.actions).length > 0 && <CodeExample key={`${active.type}:actions`} title="Named actions" copyLabel="Copy named actions" source={JSON.stringify(active.actions, null, 2)}/>}</div></div><p className="catalog-schema-note">Schema bindings expect matching state and datasource entries in the owning view. Callback handlers reference the named actions shown above.</p></section></article></div></section>;
+  const entries = useMemo(
+    () => catalogEntries.filter((entry) => registry.has(entry.type)),
+    [registry],
+  );
+  const filtered = entries.filter((entry) =>
+    `${entry.name} ${entry.type} ${entry.category} ${entry.description}`
+      .toLowerCase()
+      .includes(query.toLowerCase().trim()),
+  );
+  const active =
+    entries.find((entry) => entry.type === selectedType) ?? entries[0];
+  const SearchInput = registry.get("search-input");
+  if (!active)
+    return (
+      <section className="tab-content">
+        <h1>Components</h1>
+        <p>No catalog components are registered.</p>
+      </section>
+    );
+  return (
+    <section className="tab-content catalog-tab">
+      <div className="catalog-page-heading">
+        <div>
+          <p className="eyebrow">01 / COMPONENTS</p>
+          <h1>Components</h1>
+          <p className="intro">
+            Reusable pieces. One shared library. Explore their contracts and
+            make them your own.
+          </p>
+        </div>
+        <Badge
+          className="catalog-library-count"
+          appearance="tint"
+          color="brand"
+          icon={<Icon name="layers" />}
+        >
+          {entries.length} registered components
+        </Badge>
+      </div>
+      <div className="catalog-layout">
+        <aside className="catalog-sidebar">
+          <SearchInput
+            label="Search components"
+            value={query}
+            placeholder="Find a component…"
+            onChange={({ value }: ValueChange<string>) => setQuery(value)}
+          />
+          <p className="catalog-result-count">
+            {query.trim()
+              ? `${filtered.length} matching components`
+              : `${entries.length} components · ${categories.length} categories`}
+          </p>
+          <nav aria-label="Component catalog">
+            {categories.map((category) => {
+              const group = filtered.filter(
+                (entry) => entry.category === category,
+              );
+              const categoryIcon = categoryIcons[category];
+              return group.length ? (
+                <div className="catalog-category" key={category}>
+                  <h2>
+                    <Icon name={categoryIcon} size={13} />
+                    {category}
+                    <span>{group.length}</span>
+                  </h2>
+                  {group.map((entry) => (
+                    <ToolButton
+                      {...restorePreviewFocus}
+                      appearance="subtle"
+                      key={entry.type}
+                      type="button"
+                      aria-current={
+                        active.type === entry.type ? "true" : undefined
+                      }
+                      className={active.type === entry.type ? "selected" : ""}
+                      onClick={() => setSelectedType(entry.type)}
+                    >
+                      <span>{entry.name}</span>
+                      <Icon name="chevron" size={12} />
+                    </ToolButton>
+                  ))}
+                </div>
+              ) : null;
+            })}
+          </nav>
+          {!filtered.length && (
+            <div className="catalog-empty-search">
+              <p>No components match “{query}”.</p>
+              <ToolButton type="button" onClick={() => setQuery("")}>
+                Clear search
+              </ToolButton>
+            </div>
+          )}
+          <section className="catalog-sidebar-note">
+            <div>
+              <h3>Runtime Infrastructure</h3>
+              <p>
+                <strong>RuntimeNode</strong> renders registered components and
+                reactive props.
+              </p>
+              <p>
+                <strong>RouteOutlet</strong> mounts a whole ViewDefinition for a
+                route.
+              </p>
+              <p>
+                <strong>DataTreeRuntime</strong> loads and merges child data for
+                a known registered tree component.
+              </p>
+              <p>
+                <strong>SchemaOutlet</strong> loads an unknown component subtree
+                into the current runtime.
+              </p>
+            </div>
+          </section>
+          <div className="catalog-sidebar-note">
+            <Icon name="code" size={17} />
+            <p>
+              Every preview uses the same ComponentRegistry as schema-rendered
+              views.
+            </p>
+          </div>
+        </aside>
+        <article
+          className="catalog-detail"
+          aria-labelledby="catalog-component-name"
+        >
+          <header className="catalog-component-heading">
+            <div>
+              <span className="catalog-category-label">{active.category}</span>
+              <h2 id="catalog-component-name">
+                {active.name}
+                <Badge appearance="tint" color="brand">
+                  {active.type}
+                </Badge>
+              </h2>
+              <p>{active.description}</p>
+            </div>
+            <span className="catalog-isolated-badge">
+              <Icon name="check" size={12} />
+              Isolated component
+            </span>
+          </header>
+          <section className="catalog-live-preview">
+            <div className="catalog-section-heading">
+              <h3>
+                <span className="live-dot" />
+                Live preview
+              </h3>
+              <ToolButton
+                type="button"
+                onClick={() => setRevision((previous) => previous + 1)}
+              >
+                <Icon name="reset" size={13} />
+                Reset preview
+              </ToolButton>
+            </div>
+            <ComponentPreview
+              key={`${active.type}:${revision}`}
+              entry={active}
+              registry={registry}
+            />
+          </section>
+          <p className="catalog-implementation">
+            Implementation: {implementations[active.type]}
+          </p>
+          <Contract entry={active} />
+          <section className="catalog-examples">
+            <h3>Usage examples</h3>
+            <p>
+              Use ordinary props in React. Declare bindings and named handlers
+              in schema.
+            </p>
+            <div className="catalog-example-grid">
+              <CodeExample
+                key={`${active.type}:react`}
+                title="React"
+                copyLabel="Copy React example"
+                source={active.reactExample}
+              />
+              <div>
+                <CodeExample
+                  key={`${active.type}:schema`}
+                  title="Schema JSON"
+                  copyLabel="Copy schema example"
+                  source={JSON.stringify(active.schema, null, 2)}
+                />
+                {Object.keys(active.actions).length > 0 && (
+                  <CodeExample
+                    key={`${active.type}:actions`}
+                    title="Named actions"
+                    copyLabel="Copy named actions"
+                    source={JSON.stringify(active.actions, null, 2)}
+                  />
+                )}
+              </div>
+            </div>
+            <p className="catalog-schema-note">
+              Schema bindings expect matching state and datasource entries in
+              the owning view. Callback handlers reference the named actions
+              shown above.
+            </p>
+          </section>
+        </article>
+      </div>
+    </section>
+  );
 }
-

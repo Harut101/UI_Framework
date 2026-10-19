@@ -1,3 +1,4 @@
+import { viewRoutes } from './routes/views';
 import { fragmentRoutes } from './routes/fragments';
 import { navigationRoutes } from './routes/navigation';
 import { schemaRoutes } from './routes/schema';
@@ -11,7 +12,7 @@ import { reportingRoutes } from './routes/reporting';
 import { usersRoutes } from './routes/users';
 export const app = express();
 app.use(express.json());
-app.use('/api', schemaRoutes, fragmentRoutes, navigationRoutes, healthRoutes, demoRoutes, itemsRoutes, reportingRoutes, usersRoutes);
+app.use('/api', viewRoutes, schemaRoutes, fragmentRoutes, navigationRoutes, healthRoutes, demoRoutes, itemsRoutes, reportingRoutes, usersRoutes);
 app.use('/api', (_request, response) => response.status(404).json({ message: 'Unknown API endpoint' }));
 const directory = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.resolve(directory, '../dist')));

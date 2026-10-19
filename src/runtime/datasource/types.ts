@@ -1,4 +1,10 @@
-import type { StateExpression, JsonObject, JsonValue, ScopeId, ScopedChangedPath } from "../shared/json";
+import type {
+  StateExpression,
+  JsonObject,
+  JsonValue,
+  ScopeId,
+  ScopedChangedPath,
+} from "../shared/json";
 export interface DataSourceIdentity {
   readonly scopeId: ScopeId;
   readonly sourceId: string;
@@ -30,5 +36,3 @@ export interface DataEntry {
   data: unknown;
   error: string | null;
 }
-
-

@@ -77,7 +77,7 @@ export type ScopeInspection = {
   actions: RuntimeScope['actionDefinitions']; dependencies: readonly DependencyRegistration[]; children: ScopeInspection[];
 };
 export function schemaLogEntries(entries: readonly TraceEntry[]) {
-  return entries.filter(entry => entry.metadata?.schemaResource);
+  return entries.filter(entry => entry.metadata?.schemaResource || entry.metadata?.viewSchema);
 }
 
 /** Reconstruct a readable namespace from a registered, canonical scope address. */

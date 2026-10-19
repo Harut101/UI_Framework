@@ -9,7 +9,9 @@ export const appStateSlice = createSlice({
   reducers: {},
   extraReducers: (builder) =>
     builder
-      .addCase(runtimeActions.disposeScope, (state, { payload }) => payload.scope === 'app' ? {} : state)
+      .addCase(runtimeActions.disposeScope, (state, { payload }) =>
+        payload.scope === "app" ? {} : state,
+      )
       .addCase(runtimeActions.initialize, (state, { payload }) =>
         payload.scope === "app" ? payload.initialState : state,
       )

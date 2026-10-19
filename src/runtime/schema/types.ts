@@ -1,20 +1,28 @@
-import type { JsonObject, JsonValue, Scope } from '../shared/json';
-import type { ComponentDefinition } from '../rendering/types';
-import type { LoadedSchemaDefinition } from '../fragment/types';
+import type { JsonObject, JsonValue, Scope, StateExpression } from "../shared/json";
+import type { ComponentDefinition } from "../rendering/types";
+import type { LoadedSchemaDefinition } from "../fragment/types";
 
-export type DefinitionCachePolicy = 'none' | 'scope' | 'view' | 'application';
+export type DefinitionCachePolicy = "none" | "scope" | "view" | "application";
 export type DefinitionCacheSelection =
   | { definitionCache?: DefinitionCachePolicy; cache?: never }
   | { definitionCache?: never; cache?: DefinitionCachePolicy };
-export interface SchemaRequestDefinition { method?: 'GET' | 'POST'; path: string; query?: JsonObject; body?: JsonValue }
+export interface SchemaRequestDefinition {
+  method?: "GET" | "POST";
+  path: string;
+  query?: JsonObject | StateExpression;
+  body?: JsonValue;
+}
+export type SchemaRequestSource = SchemaRequestDefinition | StateExpression;
 export interface SchemaSourceDefinition {
-  request: SchemaRequestDefinition;
-  load: { strategy: 'onDemand' } & DefinitionCacheSelection;
+  request: SchemaRequestSource;
+  load: { strategy: "onDemand" } & DefinitionCacheSelection;
 }
 /** Inline sources need no registration; cache is a definition-only compatibility alias. */
-export type InlineSchemaSource = { request: SchemaRequestDefinition } & DefinitionCacheSelection;
+export type InlineSchemaSource = {
+  request: SchemaRequestSource;
+} & DefinitionCacheSelection;
 export type SchemaSource = string | InlineSchemaSource;
-export type FragmentScopeLifetime = 'activation' | 'outlet';
+export type FragmentScopeLifetime = "activation" | "outlet";
 export type FragmentKey = string | number | boolean | null;
 export interface SchemaFragmentEntry {
   source: string;
@@ -24,7 +32,7 @@ export interface SchemaFragmentEntry {
   /** Request origin, distinct from the definition cache owner. */
   requestingScopeId?: string;
   cache: DefinitionCachePolicy;
-  status: 'loading' | 'success' | 'error';
+  status: "loading" | "success" | "error";
   loading: boolean;
   schema: LoadedSchemaDefinition | null;
   error: string | null;
@@ -34,8 +42,8 @@ export interface SchemaFragmentEntry {
 }
 export type SchemaFragmentState = Record<string, SchemaFragmentEntry>;
 export interface SchemaOutletDefinition extends ComponentDefinition {
-  type: 'schema-outlet';
+  type: "schema-outlet";
   source: SchemaSource;
-  enabled?: import('../shared/json').Expression | boolean;
-  key?: FragmentKey | import('../shared/json').Expression;
+  enabled?: import("../shared/json").Expression | boolean;
+  key?: FragmentKey | import("../shared/json").Expression;
 }

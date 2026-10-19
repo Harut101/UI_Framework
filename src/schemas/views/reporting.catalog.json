@@ -18,12 +18,16 @@
     },
     "selectedReportId": "",
     "lastRun": null,
-    "selectedObjectId": null,
-    "detailsOpened": false,
-    "tenantAlias": "northwind.onmicrosoft.com",
-    "activeTab": "overview",
     "itemsDemoOpened": false,
-    "itemsDemoContext": "workspace"
+    "itemsDemoContext": "workspace",
+    "panel": {
+      "open": false,
+      "schemaId": null,
+      "request": {
+        "path": null,
+        "query": {}
+      }
+    }
   },
   "dataSources": {
     "facets": {
@@ -247,43 +251,6 @@
       "target": "filters.module",
       "value": "$event.value"
     },
-    "selectObject": {
-      "type": "state.set",
-      "target": "selectedObjectId",
-      "value": "$event.value"
-    },
-    "openDetailsPanel": {
-      "type": "state.set",
-      "target": "detailsOpened",
-      "value": true
-    },
-    "openObjectDetails": {
-      "type": "sequence",
-      "actions": [
-        "selectObject",
-        "openDetailsPanel"
-      ]
-    },
-    "closeObjectDetails": {
-      "type": "state.set",
-      "target": "detailsOpened",
-      "value": false
-    },
-    "setTenantAlias": {
-      "type": "state.set",
-      "target": "tenantAlias",
-      "value": "$event.value"
-    },
-    "selectDetailsTab": {
-      "type": "state.set",
-      "target": "activeTab",
-      "value": "$event.value"
-    },
-    "confirmObjectAction": {
-      "type": "notification.show",
-      "message": "Demo action completed through the owning ViewRuntime",
-      "tone": "success"
-    },
     "openItemsDemo": {
       "target": "itemsDemoOpened",
       "type": "state.set",
@@ -298,6 +265,71 @@
       "target": "itemsDemoContext",
       "type": "state.set",
       "value": "$event.value"
+    },
+    "openSelectedPanel": {
+      "type": "state.set",
+      "target": "panel",
+      "value": {
+        "open": true,
+        "schemaId": "$event.value",
+        "request": {
+          "path": "/api/ui/object-panels",
+          "query": {
+            "schema": "$event.value"
+          },
+          "method": "GET"
+        }
+      }
+    },
+    "openUserCreatePanel": {
+      "type": "state.set",
+      "target": "panel",
+      "value": {
+        "open": true,
+        "schemaId": "user.create",
+        "request": {
+          "path": "/api/ui/users/create",
+          "query": {},
+          "method": "GET"
+        }
+      }
+    },
+    "openReportRunPanel": {
+      "type": "state.set",
+      "target": "panel",
+      "value": {
+        "open": true,
+        "schemaId": "report.run",
+        "request": {
+          "path": "/api/ui/reports/run",
+          "method": "POST",
+          "body": {
+            "contextId": "privileged-access"
+          },
+          "query": {}
+        }
+      }
+    },
+    "closePanel": {
+      "type": "state.set",
+      "target": "panel.open",
+      "value": false
+    },
+    "openChangeReportRunPanel": {
+      "type": "state.set",
+      "target": "panel",
+      "value": {
+        "open": true,
+        "schemaId": "report.run",
+        "request": {
+          "path": "/api/ui/reports/run",
+          "method": "POST",
+          "body": {
+            "contextId": "gpo-changes"
+          },
+          "query": {}
+        }
+      }
     }
   },
   "root": {
@@ -349,10 +381,55 @@
         "id": "dynamic-objects-card",
         "type": "card",
         "props": {
-          "title": "Dynamic object details",
-          "description": "Select an object. The backend decides which component tree appears."
+          "title": "Dynamic schema panels",
+          "description": "Choose an action or an object. Each action selects a schema and optional context."
         },
         "children": [
+          {
+            "id": "panel-launcher-actions",
+            "type": "row",
+            "props": {
+              "gap": 8
+            },
+            "children": [
+              {
+                "id": "panel-launcher-new-user",
+                "type": "button",
+                "props": {
+                  "label": "New user"
+                },
+                "handlers": {
+                  "onClick": {
+                    "action": "openUserCreatePanel"
+                  }
+                }
+              },
+              {
+                "id": "panel-launcher-run-report",
+                "type": "button",
+                "props": {
+                  "label": "Run report panel"
+                },
+                "handlers": {
+                  "onClick": {
+                    "action": "openReportRunPanel"
+                  }
+                }
+              },
+              {
+                "id": "panel-launcher-actions-changes",
+                "type": "button",
+                "props": {
+                  "label": "Run changes report"
+                },
+                "handlers": {
+                  "onClick": {
+                    "action": "openChangeReportRunPanel"
+                  }
+                }
+              }
+            ]
+          },
           {
             "id": "dynamic-objects",
             "type": "generic-list",
@@ -377,11 +454,11 @@
               ]
             },
             "bindings": {
-              "selectedId": "$state.selectedObjectId"
+              "selectedId": "$state.panel.schemaId"
             },
             "handlers": {
               "onSelect": {
-                "action": "openObjectDetails"
+                "action": "openSelectedPanel"
               }
             }
           }
@@ -803,32 +880,87 @@
         }
       },
       {
-        "id": "dynamic-object-panel",
+        "id": "dynamic-schema-panel",
         "type": "side-panel",
         "props": {
-          "title": "Dynamic object details",
-          "description": "Content supplied by a remote ComponentDefinition"
+          "title": "Dynamic schema panel",
+          "description": "The initiating action supplies the schema request. The panel only hosts remote content."
         },
         "bindings": {
-          "open": "$state.detailsOpened"
+          "open": "$state.panel.open"
         },
         "handlers": {
           "onClose": {
-            "action": "closeObjectDetails"
+            "action": "closePanel"
           }
         },
         "children": [
           {
-            "id": "object-details-outlet",
+            "id": "panel-switcher-actions",
+            "type": "row",
+            "props": {
+              "gap": 8
+            },
+            "children": [
+              {
+                "id": "panel-switcher-new-user",
+                "type": "button",
+                "props": {
+                  "label": "New user"
+                },
+                "handlers": {
+                  "onClick": {
+                    "action": "openUserCreatePanel"
+                  }
+                }
+              },
+              {
+                "id": "panel-switcher-run-report",
+                "type": "button",
+                "props": {
+                  "label": "Run report panel"
+                },
+                "handlers": {
+                  "onClick": {
+                    "action": "openReportRunPanel"
+                  }
+                }
+              },
+              {
+                "id": "panel-switcher-actions-changes",
+                "type": "button",
+                "props": {
+                  "label": "Run changes report"
+                },
+                "handlers": {
+                  "onClick": {
+                    "action": "openChangeReportRunPanel"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "panel-schema-label",
+            "type": "text",
+            "bindings": {
+              "value": "$state.panel.schemaId"
+            }
+          },
+          {
+            "id": "panel-content",
             "type": "schema-outlet",
-            "source": "objectDetailsPanel",
-            "enabled": "$state.detailsOpened",
-            "key": "$state.selectedObjectId",
+            "enabled": "$state.panel.open",
+            "key": "$state.panel.schemaId",
+            "source": {
+              "request": "$state.panel.request",
+              "definitionCache": "view"
+            },
             "loading": {
-              "id": "object-details-loading",
+              "id": "panel-loading",
               "type": "spinner",
               "props": {
-                "label": "Loading panel schema…"
+                "label": "Loading panel schema..."
               }
             }
           }
@@ -946,17 +1078,5 @@
         ]
       }
     ]
-  },
-  "schemaSources": {
-    "objectDetailsPanel": {
-      "request": {
-        "method": "GET",
-        "path": "/api/ui/object-details/$state.selectedObjectId"
-      },
-      "load": {
-        "strategy": "onDemand",
-        "cache": "view"
-      }
-    }
   }
 }

@@ -13,7 +13,10 @@
       "expandedIds": [
         "reporting"
       ]
-    }
+    },
+    "currentPath": "",
+    "navigationCaption": "GUARDIAN WORKSPACE",
+    "navigationFooter": "Demo workspace"
   },
   "dataSources": {
     "navigation": {
@@ -63,16 +66,20 @@
       "type": "datasource.reload",
       "source": "navigation"
     },
-    "selectDemoContext": {
-      "type": "state.patch",
-      "value": {
-        "breadcrumbs": "$event.breadcrumbs"
-      }
-    },
     "setNavigationExpansion": {
       "target": "navigation.expandedIds",
       "value": "$event.value",
       "type": "state.set"
+    },
+    "rememberView": {
+      "type": "state.patch",
+      "value": {
+        "currentPath": "$event.pathname",
+        "breadcrumbs": [
+          "Guardian",
+          "$event.title"
+        ]
+      }
     }
   },
   "shell": {
@@ -114,7 +121,10 @@
           "selectedId": "$appState.selectedNavigationId",
           "loading": "$appData.navigation.loading",
           "error": "$appData.navigation.error",
-          "expandedIds": "$appState.navigation.expandedIds"
+          "expandedIds": "$appState.navigation.expandedIds",
+          "selectedHref": "$appState.currentPath",
+          "caption": "$appState.navigationCaption",
+          "footerText": "$appState.navigationFooter"
         },
         "handlers": {
           "onSelect": {
@@ -137,11 +147,14 @@
       }
     ]
   },
-  "routes": [
-    {
-      "path": "catalog",
-      "viewId": "reporting.catalog"
-    }
-  ],
-  "views": {}
+  "routes": [],
+  "views": {},
+  "viewSource": {
+    "request": {
+      "method": "GET",
+      "path": "/api/ui/views"
+    },
+    "pathQueryParam": "path",
+    "onLoaded": "rememberView"
+  }
 }

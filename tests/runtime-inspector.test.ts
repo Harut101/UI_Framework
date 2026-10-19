@@ -11,7 +11,7 @@ describe('read-only runtime inspection', () => {
   it('reads the active view and its graph declarations without including the previous view', () => {
     const state: RuntimeState = { fragments: {}, applicationInstance: null, schemaFragments: {}, appState: {}, appData: {}, viewState: {}, viewData: { users: { status: 'success', loading: false, data: { items: [] }, error: null } }, viewInstance: 'users.catalog:42' };
     const before = structuredClone(state);
-    const sources = inspectDatasources(reportingApplicationDefinition, state);
+    const sources = inspectDatasources({ ...reportingApplicationDefinition, views: { 'users.catalog': usersCatalogDefinition } }, state);
     expect(sources.map(source => source.key)).toEqual(['app:navigation', 'app:me', 'view:users']);
     expect(sources.find(source => source.key === 'view:users')).toMatchObject({ definition: usersCatalogDefinition.dataSources.users, entry: state.viewData.users, dependencies: ['$state.filters.department', '$state.filters.status', '$state.filters.search'] });
     expect(state).toEqual(before);
@@ -39,7 +39,7 @@ describe('read-only runtime inspection', () => {
     } finally { runtime.dispose(); }
   });
   it('keeps app and view datasource IDs distinct even when they share a name', () => {
-    const application = { ...reportingApplicationDefinition, dataSources: { users: { ...usersCatalogDefinition.dataSources.users, dependsOn: ['$appState.department' as const] } } };
+    const application = { ...reportingApplicationDefinition, views: { 'users.catalog': usersCatalogDefinition }, dataSources: { users: { ...usersCatalogDefinition.dataSources.users, dependsOn: ['$appState.department' as const] } } };
     const sources = inspectDatasources(application, { fragments: {}, applicationInstance: null, schemaFragments: {}, appState: {}, appData: {}, viewState: {}, viewData: {}, viewInstance: 'users.catalog:1' });
     expect(sources.map(source => source.key)).toEqual(['app:users', 'view:users']);
     expect(sources[0].dependencies).toEqual(['$appState.department']);

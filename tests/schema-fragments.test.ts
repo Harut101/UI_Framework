@@ -75,6 +75,7 @@ describe('SchemaFragmentManager', () => {
   it('resolves path, query and POST body with the shared ExpressionResolver and URI encoding', async () => {
     const { runtime, environment, load, transport } = setup();
     const source = runtime.definition.schemaSources!.content;
+    if (typeof source.request === 'string') throw new Error('Expected request object');
     source.request.method = 'POST'; source.request.body = { id: '$state.selected' };
     await runtime.actionEngine.execute('select', { event: { value: 'space / ?' } });
     const lease = load('space / ?'); await lease.promise;
@@ -83,7 +84,7 @@ describe('SchemaFragmentManager', () => {
     expect(() => environment.resolver.resolvePath('/api/$state.selected/$appState.missing', { state })).toThrow('Unresolved');
   });
   it('records missing path expressions as safe errors without issuing HTTP', async () => {
-    const { runtime, load, environment, transport } = setup(); runtime.definition.schemaSources!.content.request.path = '/api/$state.missing';
+    const { runtime, load, environment, transport } = setup(); const request = runtime.definition.schemaSources!.content.request; if (typeof request === 'string') throw new Error('Expected request object'); request.path = '/api/$state.missing';
     const lease = load(); await lease.promise; expect(transport).not.toHaveBeenCalled();
     expect(environment.store.getState().schemaFragments[lease.id].error).toContain('Unresolved');
   });

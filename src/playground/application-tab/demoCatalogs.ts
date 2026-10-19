@@ -1,21 +1,13 @@
-import { reportingApplicationDefinition, reportingCatalogDefinition, usersCatalogDefinition } from '../../schemas/reporting';
+import { reportingCatalogDefinition, usersCatalogDefinition } from '../../schemas/reporting';
 import type { ComponentDefinition } from '../../runtime/rendering/types';
 import type { ViewDefinition } from '../../runtime/view/types';
-import type { ApplicationDefinition } from '../../runtime/application/types';
 
 export const demoCatalogs = [
-  { id: 'reports', label: 'Reports Catalog', definition: reportingCatalogDefinition, navigationId: 'module-navigation', listId: 'reports-list' },
-  { id: 'users', label: 'Users Catalog', definition: usersCatalogDefinition, navigationId: 'department-navigation', listId: 'users-list' },
+  { id: 'reports', label: 'Reports Catalog', href: '/application/catalog', definition: reportingCatalogDefinition, navigationId: 'module-navigation', listId: 'reports-list' },
+  { id: 'users', label: 'Users Catalog', href: '/application/users', definition: usersCatalogDefinition, navigationId: 'department-navigation', listId: 'users-list' },
 ] as const;
 export type DemoCatalogId = (typeof demoCatalogs)[number]['id'];
 export type DemoCatalog = (typeof demoCatalogs)[number];
-
-export function demoApplicationDefinition(catalog: DemoCatalog): ApplicationDefinition {
-  return {
-    ...reportingApplicationDefinition,
-    routes: reportingApplicationDefinition.routes.map(route => ({ ...route, viewId: catalog.definition.id })),
-  };
-}
 
 function findNode(node: ComponentDefinition, id: string): ComponentDefinition | undefined {
   if (node.id === id) return node;

@@ -51,9 +51,11 @@ SchemaRequestDefinition/ChildrenSourceDefinition.request уже: method?:GET/POS
 
 Datasource/SchemaFragmentManager/tree DATA дополнительно вызывают resolvePath для $tokens внутри path. Каждое значение string/number/boolean кодируется одним сегментом; missing/empty/object → ошибка без HTTP. api.request action этого шага не делает: используйте {id}+params.
 
+Schema-source дополнительно поддерживает полный path expression, query-object StateExpression и whole-request StateExpression (например source.request="$state.panel.request"). Полный путь возвращается без кодирования слешей и проверяется по host policy для нормализованного локального URL. Все query поля могут быть заданы инициатором одним объектом. См. [динамические источники](dynamic-panels.md).
+
 fetchTransport использует window.location.origin, AbortSignal и JSON. headers/credentials/auth/timeoutMs/baseURL/retry не входят в wire request; другой transport внедряется ApiTransport(request,signal):Promise<unknown>. Не-2xx: JSON message либо Error("Request failed (status)"). Success всегда response.json(); 204/не-JSON вызовет ошибку. Content-Type ответа не проверяется отдельно.
 
-Префикс /api/ не является security allowlist/canonicalization. Host должен нормализовать URL, ограничить origin/path/method/redirects и авторизовать операции. Сетевые byte/time/concurrency limits отдельные.
+Host RequestPolicy проверяет нормализованный локальный URL до HTTP, default allowedPathPrefixes=["/api/"]. Prefix задаётся четвёртым аргументом RuntimeEnvironment; custom transport не отменяет policy. Все local prefixes можно явно разрешить значением ["/"]. Backend authorization, origin mapping custom transport, method/redirect policy остаются обязанностью host. Сетевые byte/time/concurrency limits отдельные.
 
 ## DataEntry: $data.<sourceId>
 
@@ -115,3 +117,21 @@ Inline DATA id — canonical sorted request JSON, percent-encoded без dotted-
 Dynamic inline resources не создают фиктивных graph edges: expansion/request identity управляет selector/effect. Unknown navigation data — не повод использовать SchemaOutlet; он нужен для неизвестной структуры UI.
 
 Tree validation ограничивает 1000 nodes/nesting 32. Сетевые limits отдельные; API response shapes требуют проверки host.
+
+
+## Resolved DATA и navigation
+
+Author expressions проверяются до исполнения. После resolve query/body считаются буквальными данными: пользовательские $sales/$100 не являются namespace expressions. projectDataTree и acquireInline используют validateResolvedRequest, а не повторную declaration validation.
+
+PrimaryNavigation получает caption/footerText через props/bindings. Default — отсутствие этих строк; компонент не заявляет connection status. Пункт с href и children/childrenSource имеет независимые действия: label выбирает href, отдельная кнопка Expand/Collapse управляет expandedIds. Группа без href сохраняет прежнее раскрытие по label.
+
+Пример host configuration:
+
+~~~ts
+const environment = new RuntimeEnvironment(
+  navigate,
+  notify,
+  customTransport,
+  { allowedPathPrefixes: ["/v2/"] }
+);
+~~~

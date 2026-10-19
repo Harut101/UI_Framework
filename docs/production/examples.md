@@ -4,6 +4,7 @@
 
 | Файл | Использование |
 | --- | --- |
+| [Полная схема текущего demo](../examples/guardian.application.full.json) | Текущий reportingApplicationDefinition: shell, actions, dataSources и общий viewSource. routes/views пусты; полная ViewDefinition приходит с backend по browser pathname. |
 | [ApplicationDefinition](../examples/production/application.json) | Полный shell/header/navigation/route/view в одном JSON. Validate + ApplicationRuntime/ApplicationHost под Router/Provider/FluentProvider. |
 | [ViewDefinition](../examples/production/view.json) | Та же View отдельно; можно вставить в Tab 2 Schema Playground. |
 | [FragmentDefinition](../examples/production/fragment.json) | Полный backend response для workspace: local state/actions/items/onInit/nested note. Получается HTTP существующего demo, не frontend import. |

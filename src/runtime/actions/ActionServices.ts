@@ -4,7 +4,7 @@ import type { DataSourceManager } from "../datasource/DataSourceManager";
 import type { Diagnostics } from "../shared/Diagnostics";
 import type { ApiTransport } from "../datasource/api";
 import type { Scope } from "../shared/json";
-import type { RuntimeScope } from '../shared/RuntimeScope';
+import type { RuntimeScope } from "../shared/RuntimeScope";
 export interface ActionServices {
   readonly runtimeScope: RuntimeScope;
   readonly scope: Scope;
@@ -19,4 +19,3 @@ export interface ActionServices {
   active: () => boolean;
   signal: AbortSignal;
 }
-

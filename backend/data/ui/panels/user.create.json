@@ -1,0 +1,91 @@
+{
+  "type": "fragment",
+  "id": "user.create",
+  "state": {
+    "displayName": "",
+    "email": ""
+  },
+  "actions": {
+    "setDisplayName": {
+      "type": "state.set",
+      "target": "displayName",
+      "value": "$event.value"
+    },
+    "setEmail": {
+      "type": "state.set",
+      "target": "email",
+      "value": "$event.value"
+    },
+    "previewUser": {
+      "type": "notification.show",
+      "message": "Demo user draft prepared. No user was created.",
+      "tone": "info"
+    }
+  },
+  "root": {
+    "type": "stack",
+    "props": {
+      "gap": 16
+    },
+    "children": [
+      {
+        "type": "title",
+        "props": {
+          "value": "Create user",
+          "level": 2
+        }
+      },
+      {
+        "type": "text",
+        "props": {
+          "value": "A new-user schema needs no selected object. This is a draft preview."
+        }
+      },
+      {
+        "type": "text-input",
+        "props": {
+          "label": "Display name"
+        },
+        "bindings": {
+          "value": "$state.displayName"
+        },
+        "handlers": {
+          "onChange": {
+            "action": "setDisplayName"
+          }
+        }
+      },
+      {
+        "type": "text-input",
+        "props": {
+          "label": "Email address"
+        },
+        "bindings": {
+          "value": "$state.email"
+        },
+        "handlers": {
+          "onChange": {
+            "action": "setEmail"
+          }
+        }
+      },
+      {
+        "type": "text",
+        "bindings": {
+          "value": "$state.displayName"
+        }
+      },
+      {
+        "type": "button",
+        "props": {
+          "label": "Preview user draft"
+        },
+        "handlers": {
+          "onClick": {
+            "action": "previewUser"
+          }
+        }
+      }
+    ]
+  }
+}

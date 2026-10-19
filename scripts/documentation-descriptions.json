@@ -29,7 +29,7 @@
     "method": "HTTP-метод; RequestDefinition требует его явно, schema/children source по умолчанию GET.",
     "path": "Путь запроса/маршрута либо массив сегментов scoped-адреса; тип различает эти контракты.",
     "params": "Значения для {name} в request.path; fetchTransport кодирует каждый параметр как сегмент.",
-    "query": "Query-параметры запроса; transport пропускает null/undefined/пустую строку, остальные преобразует String.",
+    "query": "Query-параметры запроса; SchemaRequestDefinition также допускает StateExpression, возвращающее весь объект. Transport пропускает null/undefined/пустую строку и преобразует остальные значения String.",
     "body": "JSON тело запроса; при наличии fetchTransport сериализует JSON и ставит Content-Type.",
     "dependsOn": "Явные зависимости state/data с scope identity; управляют reload datasource, не React рендером.",
     "load": "Политика lifecycle datasource или именованного schema source; см. strategy/reload/cache.",
@@ -190,7 +190,7 @@
     "constructor": "Создать объект указанного класса. Аргументы и defaults приведены в сигнатуре; владение/инициализация описаны в runtime-layers.",
     "execute": "Выполнить локальное именованное действие; context scope обязан совпасть с владельцем, scope/event/response сохраняются в цепочке.",
     "resolve": "Безопасно разрешить выражения/JSON по context; обычные строки не интерполируются.",
-    "resolvePath": "Подставить namespace tokens в HTTP path и кодировать каждое значение как один сегмент.",
+    "resolvePath": "Разрешить полный path expression без кодирования слешей либо URL-шаблон с кодированием каждого token как сегмента; полный path должен остаться локальным /api/.",
     "traceResolved": "Записать уже вычисленное handler значение для tooling без повторной оценки выражений.",
     "get": "Найти зарегистрированную реализацию по ключу; неизвестный ключ вызывает ошибку.",
     "register": "Зарегистрировать generic реализацию либо resource edges; повторные ключи/ownership детали зависят от registry.",
@@ -246,7 +246,20 @@
     "onAccept": "Принять предложенное значение: {value:suggestion}.",
     "onMessage": "Callback из data/UI контракта; точный payload указан в сигнатуре.",
     "meta": "Дополнительная подпись строки GenericList; только отображение.",
-    "count": "Отображаемое количество рядом с пунктом GenericNavigation."
+    "count": "Отображаемое количество рядом с пунктом GenericNavigation.",
+    "viewSource": "Необязательный источник полной ViewDefinition по browser pathname. При его наличии routes пуст, а View загружается HTTP перед активацией общего ViewRuntime.",
+    "pathQueryParam": "Имя query-параметра, куда loader помещает browser pathname. По умолчанию path; исходное query-значение с этим именем заменяется.",
+    "onLoaded": "Имя локального application action после успешной загрузки/валидации View; payload содержит pathname, viewId и title.",
+    "selectedHref": "Контролируемый URL выбранного navigation item. Непустое значение имеет приоритет над selectedId, включая Back/Forward.",
+    "viewSchema": "Метаданные diagnostics для загрузки полной ViewDefinition. Отдельны от fragment schemaResource и datasource loading.",
+    "pathname": "Browser pathname, включая hosting prefix, без query string/hash. Сервер сопоставляет его ViewDefinition.",
+    "release": "Идемпотентно освобождает consumer lease. Last release в microtask отменяет запрос и удаляет временную запись.",
+    "schemaExpressions": "В validateRequest разрешить whole path/query expressions только при проверке schema-source declaration; по умолчанию false. Resolved запрос проверяется без этого флага.",
+    "caption": "Необязательный заголовок navigation; приходит через props/bindings, без встроенного branding.",
+    "footerText": "Необязательный текст footer navigation от host/schema; компонент не вычисляет connection status.",
+    "allowedPathPrefixes": "Разрешённые префиксы нормализованного локального HTTP pathname. Host default: /api/. Для всех локальных путей явно укажите /.",
+    "requestPolicy": "Host policy для resolved HTTP URL; общая для schema, datasource, inline DATA, action и default transport.",
+    "preparedRequest": "Уже разрешённый request из snapshot selector; loader использует его без повторного чтения другого state snapshot."
   },
   "overrides": {
     "ComponentDefinition.id": "Обязательный ID узла, уникальный внутри дерева; используется React key для обычных children. Сам не передаётся в props адаптера.",
@@ -338,7 +351,11 @@
     "SchemaFragmentEntry.scope": "Legacy тег scope, инициировавшего schema resource; owner отдельно задаёт cache owner.",
     "NormalizedLoadedFragment.definition": "Normalized fragment description; при scope=host root использует host, пустые dictionaries не создают новый RuntimeScope.",
     "component:navigation-group.id": "Совместимый необязательный prop, не используется текущей реализацией; top-level node id не forwarded автоматически.",
-    "component:user-list.onSelect": "Payload {value:user.id,user:UserSummary}; owner решает действие без API внутри списка."
+    "component:user-list.onSelect": "Payload {value:user.id,user:UserSummary}; owner решает действие без API внутри списка.",
+    "ViewSchemaLoader.acquire": "Получает lease HTTP ViewDefinition по pathname и application scope. Dedup активных consumers; release отменяет последнего, generation задаёт retry. Store/RuntimeScope не создаёт.",
+    "SchemaSourceDefinition.request": "Object SchemaRequestDefinition либо StateExpression, возвращающее весь request. Во втором случае поля — уже буквальные данные инициатора.",
+    "InlineSchemaSource.request": "Object SchemaRequestDefinition либо StateExpression, возвращающее весь request. Во втором случае поля — уже буквальные данные инициатора.",
+    "ViewSourceDefinition.request": "Object SchemaRequestDefinition либо StateExpression, возвращающее весь request. Во втором случае поля — уже буквальные данные инициатора."
   },
   "functions": {
     "pathParts": "Разбить dotted path; отвергнуть пустые/unsafe prototype сегменты.",
@@ -353,7 +370,7 @@
     "diagnosticDetail": "Безопасно сериализовать значение для диагностического текста.",
     "assertLocalStateTarget": "Запретить namespace-prefixed/unsafe targets, разрешить relative dotted path.",
     "jsonLiteral": "Проверить plain finite JSON, accessors/cycles/depth/prototype paths.",
-    "validateRequest": "Проверить общий method/local path/query/params/body expression contract; не full security boundary.",
+    "validateRequest": "Проверить author declaration method/local path/query/params/body expressions; schemaExpressions допускает whole path/query binding. Host prefix policy применяется к resolved URL.",
     "validateSchemaSource": "Проверить named/inline source policies, GET/POST и ограничения owning scope.",
     "validateScope": "Проверить common state/actions/dataSources/sources, references/action/resource cycles.",
     "validateTree": "Проверить общий component tree/registry/actions/expressions/outlet; не все public props shapes.",
@@ -378,7 +395,12 @@
     "SchemaOutlet": "Приобрести UI JSON, управлять activation/retention/retry/nesting в parent context.",
     "registerSchemaOutlet": "Добавить schema-outlet infrastructure component в registry.",
     "jsonSyntaxIssue": "Преобразовать parser error в stage/message и доступные line/column.",
-    "parseViewDefinition": "JSON.parse + runtime View validation; вернуть discriminated result, не бросать ожидаемые input ошибки."
+    "parseViewDefinition": "JSON.parse + runtime View validation; вернуть discriminated result, не бросать ожидаемые input ошибки.",
+    "validateRequestPath": "Проверить нормализованный локальный URL и host allowedPathPrefixes; без оценки schema expressions.",
+    "validateResolvedRequest": "Проверить method/path/query/params shape и host URL policy после resolve; значения query/body остаются буквальными данными.",
+    "resolveSchemaRequest": "Разрешить object-template либо whole-request StateExpression в scope; GET/POST, query/body, строгие поля и host policy. Whole binding не интерпретируется повторно.",
+    "createFetchTransport": "Создать browser JSON transport с той же host URL policy, что используется runtime до вызова custom transport.",
+    "resolvePath": "Разрешить полный path expression без кодирования слешей либо URL-шаблон с кодированием token как сегмента. Host URL policy применяется после разрешения."
   },
   "values": {
     "runtimeActions": "Generic Redux action creators; payload каждого описан в runtime-layers. Не author action names.",
@@ -402,7 +424,8 @@
     "notificationActionHandler": "Generic notification.show через notify(message,tone).",
     "sequenceActionHandler": "Generic ordered await локальных named actions без rollback.",
     "statePatchActionHandler": "Generic shallow local state.patch.",
-    "stateSetActionHandler": "Generic relative local state.set."
+    "stateSetActionHandler": "Generic relative local state.set.",
+    "defaultRequestPolicy": "Замороженная совместимая demo host policy: allowedPathPrefixes=[\"/api/\"]. Не входит в JSON definition."
   },
   "components": {
     "application-shell": "CSS shell composition header/navigation/outlet. Controlled navigationCollapsed, без fetch/state subscriptions.",

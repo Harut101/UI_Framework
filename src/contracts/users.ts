@@ -3,7 +3,7 @@ export interface UserSummary {
   name: string;
   role: string;
   email: string;
-  status: 'active' | 'invited' | 'disabled';
+  status: "active" | "invited" | "disabled";
   initials?: string;
   department?: string;
   location?: string;

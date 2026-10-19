@@ -1,0 +1,78 @@
+{
+  "type": "fragment",
+  "id": "report.run",
+  "state": {
+    "contextId": null,
+    "lastRun": null
+  },
+  "actions": {
+    "runReport": {
+      "type": "api.request",
+      "request": {
+        "method": "POST",
+        "path": "/api/reports/{id}/run",
+        "params": {
+          "id": "$state.contextId"
+        }
+      },
+      "target": "lastRun",
+      "onSuccess": "runSucceeded",
+      "onError": "runFailed"
+    },
+    "runSucceeded": {
+      "type": "notification.show",
+      "message": "Demo report run started",
+      "tone": "success"
+    },
+    "runFailed": {
+      "type": "notification.show",
+      "message": "Report run failed",
+      "tone": "error"
+    }
+  },
+  "root": {
+    "type": "stack",
+    "props": {
+      "gap": 16
+    },
+    "children": [
+      {
+        "type": "title",
+        "props": {
+          "value": "Run report",
+          "level": 2
+        }
+      },
+      {
+        "type": "text",
+        "props": {
+          "value": "The opening action supplies the report context. The fragment owns the API action and result."
+        }
+      },
+      {
+        "type": "text",
+        "bindings": {
+          "value": "$state.contextId"
+        }
+      },
+      {
+        "type": "button",
+        "props": {
+          "label": "Start report run"
+        },
+        "handlers": {
+          "onClick": {
+            "action": "runReport"
+          }
+        }
+      },
+      {
+        "type": "text",
+        "visibility": "$state.lastRun",
+        "props": {
+          "value": "Demo run accepted"
+        }
+      }
+    ]
+  }
+}

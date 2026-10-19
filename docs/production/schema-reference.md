@@ -16,8 +16,9 @@ JSON содержит plain objects/arrays, строки, конечные чи�
 | actions | Record<string,ActionDefinition> | Да; {} | App-local named actions. Handler shell ищет их только здесь. |
 | schemaSources | Record<string,SchemaSourceDefinition> | Нет | Именованные источники неизвестных UI-деревьев; inline outlet не требует этой секции. |
 | shell | ComponentDefinition | Да | Всё дерево application shell: header/navigation/outlet. Ровно один route-outlet. |
-| routes | RouteDefinition[] | Да | Порядок важен для fallback на первый route. Пустой массив рендерит пустой outlet. |
-| views | Record<string,ViewDefinition> | Да | Словарь загруженных синхронно ViewDefinitions. route.viewId ссылается на ключ. |
+| routes | RouteDefinition[] | Да | Legacy bundled routing. При viewSource должен быть []. Без viewSource первый route задаёт fallback; [] рендерит пустой outlet. |
+| views | Record<string,ViewDefinition> | Да | Bundled definitions для legacy route.viewId. Remote View mode не использует этот словарь, в demo {}. |
+| viewSource | ViewSourceDefinition | Нет | Общий backend resolver полной ViewDefinition по browser pathname. Все поля: [remote routing](remote-view-routing.md). |
 
 Название application UI задаётся обычными props/bindings shell. title/version/$schema/permissions/imports не являются текущими полями ApplicationDefinition.
 
@@ -90,6 +91,8 @@ JSON validator проверяет существование type, общую с
 
 ### RouteDefinition
 
+Этот контракт сохраняет bundled mode. Для navigation URL → HTTP ViewDefinition используйте application.viewSource, описанный в [remote routing](remote-view-routing.md).
+
 | Поле | Тип | Обязательно/default | Семантика |
 | --- | --- | --- | --- |
 | path | string | Да | Path React Router внутри hosting route. |
@@ -102,7 +105,7 @@ JSON validator проверяет существование type, общую с
 | Путь | Требование/default | Значение |
 | --- | --- | --- |
 | schemaSources.<name> | Имя локального словаря | Именованный источник UI JSON. |
-| named.request | Обязательно | SchemaRequestDefinition. |
+| named.request | Обязательно | SchemaRequestDefinition либо StateExpression, возвращающее request целиком. |
 | named.load | Обязательно | Политика schema acquisition. |
 | named.load.strategy | Обязательно "onDemand" | Загружать, когда outlet приобретает ресурс. |
 | named.load.definitionCache | Нет; none | none/scope/view/application. |
@@ -113,7 +116,7 @@ JSON validator проверяет существование type, общую с
 | inline.cache | Нет | Legacy alias только definition cache. |
 | lifecycle.scopeLifetime | Нет; activation | activation/outlet, отдельно от definition cache. |
 
-SchemaRequestDefinition: method?:GET/POST (default GET), path:string (обязательно), query?:JsonObject, body?:JsonValue. params/headers/credentials/timeoutMs не входят в schema-source wire contract. Источники application уровня не могут использовать view-cache без owning View и named $viewState/$viewData-зависимости. Есть особенности общей tree validation; runtime prepare дополнительно требует owner view для policy view.
+SchemaRequestDefinition: method?:GET/POST (default GET), path:string (обязательно), query?:JsonObject|StateExpression, body?:JsonValue. params/headers/credentials/timeoutMs не входят в schema-source wire contract. Источники application уровня не могут использовать view-cache без owning View и named $viewState/$viewData-зависимости. Есть особенности общей tree validation; runtime prepare дополнительно требует owner view для policy view.
 
 ## Границы совместимости и validation
 
@@ -124,3 +127,15 @@ SchemaRequestDefinition: method?:GET/POST (default GET), path:string (обяза
 Запрещённые сегменты path: пустой, __proto__, prototype, constructor. Путь с точкой разделяется на сегменты. Для state/datasource/action/schema-source IDs выбирайте простые имена без точек и специальных prototype-ключей.
 
 Контракт current code не является формальной JSON Schema Draft-документацией/валидатором Ajv. Полные точные TS-объявления приведены в [API appendix](contracts-api-reference.md), а отличия compile-time/runtime указаны здесь и в production guide.
+
+
+Schema-source request.path допускает локальный /api/ шаблон либо полное namespace expression, возвращающее локальный /api/ путь. request.query допускает объект либо StateExpression, возвращающее объект. Оба значения разрешаются в scope инициатора до HTTP и входят в identity. См. [источник динамического содержимого](dynamic-panels.md). Обычные action/datasource request declarations сохраняют прежние формы path/query.
+
+
+## Request boundary после архитектурного ревью
+
+SchemaSourceDefinition.request, InlineSchemaSource.request и ViewSourceDefinition.request принимают object-template SchemaRequestDefinition либо StateExpression на весь request. Object-template сохраняет существующие field expressions. Whole request binding возвращает уже вычисленные literal method/path/query/body; повторного resolve query/body нет. Default method GET, поддерживается POST. Неизвестные request поля отвергаются.
+
+Declaration validation проверяет локальный абсолютный path и expressions, но не привязывает все приложения к /api/. Resolved request проходит RuntimeEnvironment.requestPolicy (default allowedPathPrefixes=["/api/"]) до transport, включая подстановку {params} в API actions. Literal/template/bound пути проверяются одинаково после URL normalization. External URL не поддерживаются этим local-path wire contract; custom transport может маршрутизировать локальный path к своему backend.
+
+Bindings и handlers одного узла не могут содержать одноимённый prop. Конфликт отклоняется с component id/property до render. Callback из handlers имеет защитный приоритет и при programmatic unvalidated дереве.

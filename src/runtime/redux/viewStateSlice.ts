@@ -12,7 +12,9 @@ export const viewStateSlice = createSlice({
       .addCase(runtimeActions.initialize, (state, { payload }) =>
         payload.scope === "view" ? payload.initialState : state,
       )
-      .addCase(runtimeActions.disposeScope, (state, { payload }) => payload.scope === 'view' ? {} : state)
+      .addCase(runtimeActions.disposeScope, (state, { payload }) =>
+        payload.scope === "view" ? {} : state,
+      )
       .addCase(runtimeActions.set, (state, { payload }) => {
         if (payload.scope === "view")
           setPath(state, payload.target, payload.value);

@@ -9,6 +9,8 @@
 | Описать Application/View/Component/Fragment и понять каждое поле | [Полный формат схем](schema-reference.md) |
 | Написать bindings, visibility, handlers и все восемь типов actions | [Выражения и действия](expressions-actions.md) |
 | Описать запрос, зависимости и навигационные DATA | [Источники данных и navigation](data-navigation.md) |
+| Загружать View с backend по URL навигации | [Remote View routing](remote-view-routing.md) |
+| Открывать разные схемы в одной панели из named actions | [Динамические панели](dynamic-panels.md) |
 | Управлять scope, кешем и вложенными фрагментами | [Scope и lifecycle](scopes-fragments.md) |
 | Интегрировать runtime, понять каждый слой и изменить инфраструктуру | [Слои runtime](runtime-layers.md) |
 | Настроить production-интеграцию, ошибки, доступ и выпуск | [Эксплуатация и ограничения](production-operations.md) |
@@ -26,7 +28,8 @@
 ApplicationDefinition
   initialState / dataSources / actions / schemaSources
   shell: ComponentDefinition → application scope
-  routes[] → views[viewId]: ViewDefinition
+  viewSource → HTTP ViewDefinition
+  или legacy routes[] → views[viewId]: ViewDefinition
     initialState / dataSources / actions / schemaSources
     root: ComponentDefinition → view scope
       schema-outlet → HTTP FragmentDefinition

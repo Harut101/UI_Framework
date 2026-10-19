@@ -10,7 +10,9 @@ export const viewDataSlice = createSlice({
       .addCase(runtimeActions.initialize, (state, { payload }) =>
         payload.scope === "view" ? payload.data : state,
       )
-      .addCase(runtimeActions.disposeScope, (state, { payload }) => payload.scope === 'view' ? {} : state)
+      .addCase(runtimeActions.disposeScope, (state, { payload }) =>
+        payload.scope === "view" ? {} : state,
+      )
       .addCase(runtimeActions.dataChanged, (state, { payload }) => {
         if (payload.scope === "view") state[payload.id] = payload.entry;
       }),

@@ -19,7 +19,9 @@ export const runtimeActions = {
     initialState: StateObject;
     data: Record<string, DataEntry>;
   }>("runtime/initialize"),
-  disposeScope: createAction<{ scope: Scope; instance: string }>("runtime/disposeScope"),
+  disposeScope: createAction<{ scope: Scope; instance: string }>(
+    "runtime/disposeScope",
+  ),
   disposeView: createAction<string>("runtime/disposeView"),
   set: createAction<StateUpdate>("runtime/set"),
   patch: createAction<StatePatch>("runtime/patch"),

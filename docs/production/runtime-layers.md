@@ -50,6 +50,8 @@ DependencyGraph выбирает ресурсы, не оповещает React �
 | actions/handlers/* | state.set/patch/API/datasource/navigate/notification/sequence, stateTarget guard. | Generic операции, не component-specific hooks. |
 | datasource/DataSourceManager.ts | Scope definitions/inline leases, start/load/reload/invalidate/dispose, debounce/status/cancel/stale guards. | Сам решает policy после graph targets. |
 | datasource/DependencyGraph.ts | registerScope/register, atomic cycle check, affected/registrations, ownership release handles. | Scope/area/path addresses; нет UI subscription. |
+| datasource/requestPolicy.ts | Default/injected RequestPolicy, normalized local path checks, {params} substitution. | Host settings, не business logic и не expression evaluator. |
+| schema/resolveSchemaRequest.ts | Общий resolver object-template/whole request для View и Fragment sources; literal values и method/path/query/body. | Один acquisition/lifecycle pipeline, не новый runtime. |
 | datasource/api.ts | {params} path resolution, browser fetchTransport JSON/errors/AbortSignal. | Расширяется injected transport. |
 | datasource/inlineRequest.ts | Canonical sorted DATA request key без dotted separators. | Отличается от schema cache resource tuple. |
 | redux/createRuntimeStore.ts | Combine slices, active instance guards, configureStore+listener, {store,listener}. | Один на environment, не FragmentRuntime. |
@@ -60,8 +62,8 @@ DependencyGraph выбирает ресурсы, не оповещает React �
 | redux/patchState.ts | Shallow root/target merge. | Не deep merge/JSON Merge Patch. |
 | redux/changedPaths.ts | Scoped snapshot diff, init/dispose; arrays/scalars как replacement. | Schema status не DATA dependency namespace. |
 | redux/listenerMiddleware.ts | Changed-state predicate, original/current state, observer. | Resource side effects, не React rendering. |
-| routing/RouteOutlet.tsx | React Router routes/fallback/keyed View по pathname/viewId/revision. | Host Router context обязателен. |
-| routing/ViewSchemaLoader.ts | Own-key sync lookup bundled definitions. | Remote View loader отсутствует. |
+| routing/RouteOutlet.tsx | Bundled routes либо remote View acquisition по pathname, loading/error/retry и общий ViewRuntimeHost. | Host Router context обязателен. |
+| routing/ViewSchemaLoader.ts | Own-key bundled lookup либо scope-owned acquire HTTP ViewDefinition, lease/dedup/abort/validation. | JSON acquisition отделён от View scope lifecycle. |
 | schema/SchemaFragmentManager.ts | prepare/identity/acquire/reload/dispose; cache JSON + transient coordination отдельно. | Cache policy не scope lifetime. |
 | schema/SchemaOutlet.tsx | Parent selectors, source leases/retry/retention/nesting/boundary. | Зарегистрированная generic инфраструктура. |
 | schema/schemaFragmentSlice.ts | changed/removed snapshots. | Без controllers/promises/closures. |
@@ -81,7 +83,7 @@ DependencyGraph выбирает ресурсы, не оповещает React �
 | --- | --- |
 | RuntimeContext | runtime:RuntimeScope, registry:ComponentRegistry |
 | NodeDefinitionContext | Текущий ComponentDefinition |
-| RouteRuntimeContext | routes, loader, environment, registry, revision |
+| RouteRuntimeContext | routes, viewSource?, runtime (application scope), loader, environment, registry, revision |
 | ScopeActivation | scope, root; host владеет dispose |
 | ApplicationHost | definition, views, environment, runtime, registry; revision default 0 |
 | ViewRuntimeHost | definition, environment, registry |
@@ -143,6 +145,9 @@ Action: union ActionDefinition → validator → generic handler → createActio
 
 Datasource: для endpoint достаточно api request definition. Новый datasource type требует union/validator/manager/status/error/cancel contract и документации.
 
-View: local state/actions/dataSources/root, затем views/routes. Fragment: HTTP envelope и SchemaOutlet. Нет feature branching.
+View: local state/actions/dataSources/root; remote mode публикует полный JSON на viewSource backend resolver, legacy mode добавляет definition в views/routes. Fragment: HTTP envelope и SchemaOutlet. Нет feature branching.
 
 Transport/permissions: injected environment services, общие allowlists/auth/telemetry на boundary. Hidden UI не server authorization.
+
+
+RuntimeEnvironment четвёртым аргументом принимает RequestPolicy; default /api/ сохраняет demo compatibility. Default fetchTransport создаётся с той же policy. Custom transport вызывается после resolved validation. Callback props защищены от overwrite bindings, а validation сообщает конфликт заранее. PrimaryNavigation branding находится в ApplicationDefinition bindings, не в adapter implementation.

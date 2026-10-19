@@ -19,6 +19,7 @@ beforeEach(() => { container = document.createElement('div'); document.body.appe
 afterEach(async () => { await act(async () => root.unmount()); environment?.applicationScope?.dispose(); container.remove(); vi.restoreAllMocks(); });
 function deferred() { let resolve!: (value: unknown) => void; const promise = new Promise<unknown>(yes => { resolve = yes; }); return { promise, resolve }; }
 const link = (id: string, name = id): TreeDataNode => ({ id, name, href: '/destination/' + id });
+const group = (id: string, name = id): TreeDataNode => ({ id, name });
 const button = (label: string) => [...container.querySelectorAll('button')].find(node => node.textContent === label)!;
 const click = async (label: string) => { expect(button(label)).toBeDefined(); await act(async () => button(label).click()); };
 async function mount(items: TreeDataNode[], transport: ApiTransport = vi.fn(async () => ({ items: [] })), strict = false, pair = false) {
@@ -38,21 +39,21 @@ async function mount(items: TreeDataNode[], transport: ApiTransport = vi.fn(asyn
 
 describe('data-driven navigation through real runtime layers', () => {
   it('renders static children with zero HTTP and preserves named selection/navigation actions', async () => {
-    const transport = vi.fn<ApiTransport>(); await mount([{ ...link('group', 'Static'), links: [link('one', 'First')] }], transport);
+    const transport = vi.fn<ApiTransport>(); await mount([{ ...group('group', 'Static'), links: [link('one', 'First')] }], transport);
     await click('Static'); expect(container.textContent).toContain('First'); expect(transport).not.toHaveBeenCalled();
     await click('First'); expect(environment.store.getState().viewState.selected).toBe('one'); expect(environment.navigate).toHaveBeenCalledWith('/destination/one');
     expect(button('First').getAttribute('aria-current')).toBe('page'); expect(environment.store.getState().schemaFragments).toEqual({});
   });
   it('loads remote children DATA using Guardian URLs only when expanded', async () => {
     const transport = vi.fn<ApiTransport>(async () => ({ items: [link('remote', 'Loaded link')] }));
-    await mount([{ ...link('group', 'Remote'), childLinksSourceUrl: 'v0/arbitrary/entities' }], transport);
+    await mount([{ ...group('group', 'Remote'), childLinksSourceUrl: 'v0/arbitrary/entities' }], transport);
     expect(transport).not.toHaveBeenCalled(); await click('Remote'); expect(transport.mock.calls[0][0]).toMatchObject({ path: '/api/v0/arbitrary/entities', method: 'GET' });
     expect(container.textContent).toContain('Loaded link'); expect(environment.store.getState().schemaFragments).toEqual({});
     await click('Remote'); await click('Remote'); expect(transport).toHaveBeenCalledTimes(1);
   });
   it('shows static children during loading, deduplicates remote ids and applies hybrid ordering', async () => {
     const pending = deferred(); const transport = vi.fn<ApiTransport>(() => pending.promise);
-    await mount([{ ...link('group', 'Hybrid'), links: [link('a', 'Static A'), link('b', 'Static B')], childrenSource: { request: { path: '/api/children' } }, childrenOrders: ['c', 'a', 'b'] }], transport);
+    await mount([{ ...group('group', 'Hybrid'), links: [link('a', 'Static A'), link('b', 'Static B')], childrenSource: { request: { path: '/api/children' } }, childrenOrders: ['c', 'a', 'b'] }], transport);
     await click('Hybrid'); expect(container.textContent).toContain('Static A'); expect(container.textContent).toContain('Loading Hybrid');
     await act(async () => pending.resolve({ items: [link('c', 'Remote C'), link('a', 'Updated A')] }));
     expect([...container.querySelectorAll('.application-nav-children button')].map(node => node.textContent)).toEqual(['Remote C', 'Updated A', 'Static B']);
@@ -60,40 +61,40 @@ describe('data-driven navigation through real runtime layers', () => {
   });
   it('cancels collapsed requests and rejects stale responses after reopening', async () => {
     const pending = deferred(); const transport = vi.fn<ApiTransport>().mockImplementationOnce(() => pending.promise).mockResolvedValueOnce({ items: [link('new', 'Current')] });
-    await mount([{ ...link('group', 'Remote'), childrenSource: { request: { path: '/api/children' } } }], transport);
+    await mount([{ ...group('group', 'Remote'), childrenSource: { request: { path: '/api/children' } } }], transport);
     await click('Remote'); await click('Remote'); expect(transport.mock.calls[0][1].aborted).toBe(true);
     await click('Remote'); expect(container.textContent).toContain('Current'); await act(async () => pending.resolve({ items: [link('old', 'Obsolete')] }));
     expect(container.textContent).not.toContain('Obsolete'); expect(container.textContent).toContain('Current');
   });
   it('contains child errors, retains static items and retries through DataSourceManager', async () => {
     const transport = vi.fn<ApiTransport>().mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce({ items: [link('remote', 'Recovered')] });
-    await mount([{ ...link('group', 'Hybrid'), links: [link('static', 'Still available')], childrenSource: { request: { path: '/api/children' } } }], transport);
+    await mount([{ ...group('group', 'Hybrid'), links: [link('static', 'Still available')], childrenSource: { request: { path: '/api/children' } } }], transport);
     await click('Hybrid'); expect(container.textContent).toContain('Unable to load Hybrid'); expect(container.textContent).toContain('Still available');
     await click('Retry Hybrid'); expect(container.textContent).toContain('Recovered'); expect(transport).toHaveBeenCalledTimes(2);
   });
   it('uses scope-aware request expressions and replaces a pending request when they change', async () => {
     const pending = deferred(); const transport = vi.fn<ApiTransport>().mockImplementationOnce(() => pending.promise).mockResolvedValueOnce({ items: [link('two', 'Second')] });
-    const { runtime } = await mount([{ ...link('group', 'Scoped'), childrenSource: { request: { path: '/api/entities/$state.query', query: { search: '$state.query' } } } }], transport);
+    const { runtime } = await mount([{ ...group('group', 'Scoped'), childrenSource: { request: { path: '/api/entities/$state.query', query: { search: '$state.query' } } } }], transport);
     await click('Scoped'); await act(async () => runtime.actionEngine.execute('query', { event: { value: 'two' } }));
     expect(transport.mock.calls[0][1].aborted).toBe(true); expect(transport.mock.calls[1][0]).toMatchObject({ path: '/api/entities/two', query: { search: 'two' } });
     await act(async () => pending.resolve({ items: [link('old', 'Old')] })); expect(container.textContent).toContain('Second'); expect(container.textContent).not.toContain('Old');
   });
   it('deduplicates StrictMode and simultaneous consumers without aborting a surviving tree', async () => {
     const pending = deferred(); const transport = vi.fn<ApiTransport>(() => pending.promise);
-    const { render, tree } = await mount([{ ...link('group', 'Shared'), childrenSource: { request: { path: '/api/shared' } } }], transport, true, true);
+    const { render, tree } = await mount([{ ...group('group', 'Shared'), childrenSource: { request: { path: '/api/shared' } } }], transport, true, true);
     await click('Shared'); expect(transport).toHaveBeenCalledTimes(1);
     await render(tree); expect(transport.mock.calls[0][1].aborted).toBe(false);
     await act(async () => pending.resolve({ items: [link('shared', 'Shared link')] })); expect(container.textContent).toContain('Shared link'); expect(transport).toHaveBeenCalledTimes(1);
   });
   it('recursively expands returned child data without requesting UI schema', async () => {
-    const transport = vi.fn<ApiTransport>(async request => request.path === '/api/outer' ? { items: [{ ...link('inner', 'Inner'), childrenSource: { request: { path: '/api/inner' } } }] } : { items: [link('leaf', 'Leaf')] });
-    await mount([{ ...link('outer', 'Outer'), childrenSource: { request: { path: '/api/outer' } } }], transport);
+    const transport = vi.fn<ApiTransport>(async request => request.path === '/api/outer' ? { items: [{ ...group('inner', 'Inner'), childrenSource: { request: { path: '/api/inner' } } }] } : { items: [link('leaf', 'Leaf')] });
+    await mount([{ ...group('outer', 'Outer'), childrenSource: { request: { path: '/api/outer' } } }], transport);
     await click('Outer'); expect(transport).toHaveBeenCalledTimes(1); await click('Inner'); expect(container.textContent).toContain('Leaf'); expect(transport).toHaveBeenCalledTimes(2);
     await click('Leaf'); expect(environment.navigate).toHaveBeenCalledWith('/destination/leaf'); expect(environment.store.getState().schemaFragments).toEqual({});
   });
   it('aborts node requests and clears their Redux data with the owning scope', async () => {
     const pending = deferred(); const transport = vi.fn<ApiTransport>(() => pending.promise);
-    const { runtime } = await mount([{ ...link('group', 'Remote'), childrenSource: { request: { path: '/api/children' } } }], transport);
+    const { runtime } = await mount([{ ...group('group', 'Remote'), childrenSource: { request: { path: '/api/children' } } }], transport);
     await click('Remote'); await act(async () => runtime.dispose()); expect(transport.mock.calls[0][1].aborted).toBe(true);
     await act(async () => pending.resolve({ items: [link('late')] })); expect(environment.store.getState().viewData).toEqual({});
   });

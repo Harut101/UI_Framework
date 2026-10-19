@@ -20,6 +20,7 @@ export type StateExpression = StateExpressionRoot | `${StateExpressionRoot}.${st
 export type ExpressionRoot = StateExpressionRoot | '$event' | '$response';
 export type Expression = ExpressionRoot | `${ExpressionRoot}.${string}`;
 export interface TraceMetadata {
+  viewSchema?: { pathname: string };
   scope?: Scope;
   instance?: string;
   actionId?: string;

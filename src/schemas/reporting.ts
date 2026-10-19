@@ -13,6 +13,6 @@ const users: unknown = usersJson;
 validateViewDefinition(users, registry);
 export const usersCatalogDefinition = users;
 export const reportingApplicationDefinition: ApplicationDefinition = {
-  ...(applicationJson as ApplicationDefinition), views: { [catalog.id]: catalog, [users.id]: users },
+  ...(applicationJson as ApplicationDefinition),
 };
 validateApplicationDefinition(reportingApplicationDefinition, registry);

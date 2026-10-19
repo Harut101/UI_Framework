@@ -777,3 +777,25 @@ Task 10 complete. Inputs and pinned formats remain future work. Existing object-
 
 
 
+
+
+## Remote View navigation (2026-10-19)
+
+The historical routing audit above describes the pre-remote baseline. ApplicationDefinition now supports viewSource: a common API request plus pathQueryParam (default path) and optional application-local onLoaded action. RouteOutlet resolves browser pathname through ViewSchemaLoader.acquire and validates a complete HTTP ViewDefinition before mounting the existing ViewRuntimeHost. Bundled routes/views remain supported without viewSource. The Full Application demo uses empty routes/views and backend navigation hrefs. Pending leases deduplicate, abort on last release/application disposal and reject stale responses. No second store/renderer/scope implementation is introduced. See [current contract](production/remote-view-routing.md).
+
+
+## Action-selected panels — 2026-10-19
+
+The original audit examples above describe the historic selectedObjectId/detailsOpened host-scoped demo. Current Reports/Users/Tab 2 schemas use panel.open/schemaId/contextId, atomic local state.set actions and an inline /api/ui/panels source. Microsoft 365/Active Directory/Configuration responses on this new endpoint are explicit FragmentDefinitions with local actions/state. New user needs no object id; report run uses optional business context. The legacy object-details endpoint is preserved with its original bare ComponentDefinition contract. No runtime replacement, cross-scope write or new action type was introduced. Definition cache and runtime lifetime remain independent. See [dynamic panels](production/dynamic-panels.md) for the complete current contract and acceptance coverage.
+
+
+## Initiator-owned schema request — 2026-10-19
+
+Panel actions now supply the complete request.path/query. The inline outlet binds $state.panel.request.path and $state.panel.request.query; it has no fixed /api/ui/panels endpoint or objectId convention. Schema source declarations accept a full path expression and a query-object StateExpression. Resolution rejects unavailable/non-local full paths or non-object query before transport; segment URL templates remain encoded. Resolved request identity drives replacement/cancel/cache using the same existing manager. No cross-scope writes or global overlay service were added. See [current panel contract](production/dynamic-panels.md).
+
+
+## Architecture review remediation — 2026-10-19
+
+The seven review findings are addressed using existing engines: whole SchemaRequestSource bindings share resolveSchemaRequest across View/fragment loading; resolved DATA validation is distinct from expression declarations; host RequestPolicy consistently validates normalized final URLs; RemoteView reacts to resolved request identity; bindings/handlers collisions are rejected and callbacks are protected; navigation parent destination/expansion are independent; caption/footer are supplied by schema. Default local /api/ behavior and legacy object request declarations remain compatible. No new Redux store, event system, renderer or global overlay service was introduced.
+
+Acceptance coverage: tests/request-boundary.test.ts and tests/architecture-regressions.test.tsx, plus the existing HTTP panel/Reports/Users/navigation/fragment suites. See the review report for the verified closure status.

@@ -133,6 +133,7 @@
 | <code>routes</code> | <code>RouteDefinition[]</code> | Нет | — | Упорядоченный массив path/viewId маршрутов. Первый используется fallback-маршрутом. |
 | <code>shell</code> | <code>ComponentDefinition</code> | Нет | — | Корень дерева приложения. Содержит ровно один route-outlet, включая оболочку и навигацию. |
 | <code>views</code> | <code>Record&lt;string, ViewDefinition&gt;</code> | Нет | — | Словарь ViewDefinition по идентификатору, на который ссылается route.viewId. |
+| <code>viewSource</code> | <code>ViewSourceDefinition</code> | Да | — | Необязательный источник полной ViewDefinition по browser pathname. При его наличии routes пуст, а View загружается HTTP перед активацией общего ViewRuntime. |
 
 ## ApplicationHeaderProps
 
@@ -258,7 +259,7 @@
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
 | <code>itemsPath</code> | <code>string</code> | Да | — | Путь к массиву DATA-ответа: items по умолчанию, пустая строка для bare array. |
-| <code>request</code> | <code>{ method?: 'GET' \| 'POST'; path: string; query?: JsonObject; body?: JsonValue }</code> | Нет | — | HTTP-конфигурация: method/path, параметры, query/body. Различия обработчиков URL описаны в data reference. |
+| <code>request</code> | <code>{     method?: "GET" \| "POST";     path: string;     query?: JsonObject;     body?: JsonValue;   }</code> | Нет | — | HTTP-конфигурация: method/path, параметры, query/body. Различия обработчиков URL описаны в data reference. |
 
 ## ChildrenSourceDefinition.request
 
@@ -267,9 +268,9 @@
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
 | <code>body</code> | <code>JsonValue</code> | Да | — | JSON тело запроса; при наличии fetchTransport сериализует JSON и ставит Content-Type. |
-| <code>method</code> | <code>'GET' \| 'POST'</code> | Да | — | HTTP-метод; RequestDefinition требует его явно, schema/children source по умолчанию GET. |
+| <code>method</code> | <code>"GET" \| "POST"</code> | Да | — | HTTP-метод; RequestDefinition требует его явно, schema/children source по умолчанию GET. |
 | <code>path</code> | <code>string</code> | Нет | — | Путь запроса/маршрута либо массив сегментов scoped-адреса; тип различает эти контракты. |
-| <code>query</code> | <code>JsonObject</code> | Да | — | Query-параметры запроса; transport пропускает null/undefined/пустую строку, остальные преобразует String. |
+| <code>query</code> | <code>JsonObject</code> | Да | — | Query-параметры запроса; SchemaRequestDefinition также допускает StateExpression, возвращающее весь объект. Transport пропускает null/undefined/пустую строку и преобразует остальные значения String. |
 
 ## component:navigation-group.onExpandedChange.payload.event
 
@@ -316,11 +317,11 @@
 | <code>error</code> | <code>ComponentDefinition</code> | Да | — | Текст ошибки/null, ошибка parser либо fallback-дерево — точная форма в типе. |
 | <code>handlers</code> | <code>Record&lt;string, HandlerDefinition&gt;</code> | Да | — | Callback prop → {action:localName}; разрешены только ссылки на локальные именованные действия. |
 | <code>id</code> | <code>string</code> | Нет | — | Обязательный ID узла, уникальный внутри дерева; используется React key для обычных children. Сам не передаётся в props адаптера. |
-| <code>key</code> | <code>import('../shared/json').JsonValue</code> | Да | — | SchemaOutlet-only user scalar/expression, default null. Runtime validation уже базового JsonValue типа: object/array запрещены. |
-| <code>lifecycle</code> | <code>{ scopeLifetime?: import('../schema/types').FragmentScopeLifetime }</code> | Да | — | Настройки активации SchemaOutlet; сейчас единственное поле scopeLifetime. |
+| <code>key</code> | <code>import("../shared/json").JsonValue</code> | Да | — | SchemaOutlet-only user scalar/expression, default null. Runtime validation уже базового JsonValue типа: object/array запрещены. |
+| <code>lifecycle</code> | <code>{     scopeLifetime?: import("../schema/types").FragmentScopeLifetime;   }</code> | Да | — | Настройки активации SchemaOutlet; сейчас единственное поле scopeLifetime. |
 | <code>loading</code> | <code>ComponentDefinition</code> | Да | — | Флаг загрузки либо fallback-дерево SchemaOutlet; не подменяет lifecycle status. |
 | <code>props</code> | <code>JsonObject</code> | Да | — | Статические JSON props компонента; выражения в них автоматически не вычисляются. |
-| <code>source</code> | <code>import('../schema/types').SchemaSource</code> | Да | — | Источник: expression у BindingDefinition, локальное имя datasource у action, имя/inline source у SchemaOutlet. Контекст определяет значение. |
+| <code>source</code> | <code>import("../schema/types").SchemaSource</code> | Да | — | Источник: expression у BindingDefinition, локальное имя datasource у action, имя/inline source у SchemaOutlet. Контекст определяет значение. |
 | <code>type</code> | <code>string</code> | Нет | — | Обязательный семантический ключ ComponentRegistry, например stack. Это не import/JS имя. |
 | <code>visibility</code> | <code>Expression \| boolean</code> | Да | — | Условие рендера: boolean или выражение; Boolean результата. По умолчанию true. |
 
@@ -330,7 +331,7 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>scopeLifetime</code> | <code>import('../schema/types').FragmentScopeLifetime</code> | Да | — | activation по умолчанию; outlet удерживает собственный scope при деактивации только пока outlet смонтирован. |
+| <code>scopeLifetime</code> | <code>import("../schema/types").FragmentScopeLifetime</code> | Да | — | activation по умолчанию; outlet удерживает собственный scope при деактивации только пока outlet смонтирован. |
 
 ## ComponentRegistry
 
@@ -413,7 +414,7 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>[key]</code> | <code>[prop: string]: unknown</code> | Да | — | Динамический ключ JSON-объекта/словаря; значение задаётся указанным типом. Для выражений используйте безопасные имена без точек. |
+| <code>[key]</code> | <code>[prop: string]: unknown;</code> | Да | — | Динамический ключ JSON-объекта/словаря; значение задаётся указанным типом. Для выражений используйте безопасные имена без точек. |
 | <code>component</code> | <code>string</code> | Нет | — | Целевой registry type адаптера data-tree. Не может быть data-tree; должен существовать в registry. |
 | <code>error</code> | <code>string \| null</code> | Да | — | Текст ошибки/null, ошибка parser либо fallback-дерево — точная форма в типе. |
 | <code>expandedIds</code> | <code>string[]</code> | Да | — | Контролируемые канонические tree keys раскрытых узлов. |
@@ -444,7 +445,7 @@
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
 | <code>affected</code> | <code>{ (changes: readonly ScopedChangedPath[]): DataSourceIdentity[]; (changes: readonly StateExpression[]): string[]; }</code> | Нет | — | Получить уникальные affected targets по пересечению scope/area/path, включая замену ancestor path. |
-| <code>constructor</code> | <code>(definitions?: Record&lt;string, DataSourceDefinition&gt;, scope: Scope = 'view')</code> | Нет | — | Создать объект указанного класса. Аргументы и defaults приведены в сигнатуре; владение/инициализация описаны в runtime-layers. |
+| <code>constructor</code> | <code>(definitions?: Record&lt;string, DataSourceDefinition&gt;, scope: Scope = "view")</code> | Нет | — | Создать объект указанного класса. Аргументы и defaults приведены в сигнатуре; владение/инициализация описаны в runtime-layers. |
 | <code>register</code> | <code>(registrations: readonly DependencyRegistration[]) =&gt; () =&gt; void</code> | Нет | — | Атомарно зарегистрировать scope-qualified resource edges с cycle check; вернуть ownership unregister handle. |
 | <code>registerScope</code> | <code>(scope: ScopeAddressContext, definitions: Record&lt;string, DataSourceDefinition&gt;) =&gt; () =&gt; void</code> | Нет | — | Преобразовать definitions.dependsOn через owning scope addresses и register полученные edges. |
 | <code>registrations</code> | <code>() =&gt; readonly DependencyRegistration[]</code> | Нет | — | Вернуть отделённую копию фактических scope-qualified dependency edges. |
@@ -487,7 +488,7 @@
 | --- | --- | --- | --- | --- |
 | <code>event</code> | <code>unknown</code> | Да | — | Payload действия или фаза diagnostics. $event доступен только в execution context, не постоянно в Redux. |
 | <code>response</code> | <code>unknown</code> | Да | — | Последний ответ API текущей action chain; при обработке ошибки объект {error:message}. |
-| <code>scope</code> | <code>import('./RuntimeScope').RuntimeScope</code> | Да | — | RuntimeScope для namespace addressing по переданному snapshot; новым callers передавать всегда. |
+| <code>scope</code> | <code>import("./RuntimeScope").RuntimeScope</code> | Да | — | RuntimeScope для namespace addressing по переданному snapshot; новым callers передавать всегда. |
 | <code>scopeId</code> | <code>string</code> | Да | — | Deprecated compatibility fragment address без RuntimeScope; используйте scope. |
 | <code>state</code> | <code>RuntimeState</code> | Нет | — | Переданный Redux snapshot, единственный источник state/data чтения этого вычисления. |
 
@@ -498,7 +499,7 @@
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
 | <code>resolve</code> | <code>(value: unknown, context: ExpressionContext) =&gt; unknown</code> | Нет | — | Безопасно разрешить выражения/JSON по context; обычные строки не интерполируются. |
-| <code>resolvePath</code> | <code>(template: string, context: ExpressionContext) =&gt; string</code> | Нет | — | Подставить namespace tokens в HTTP path и кодировать каждое значение как один сегмент. |
+| <code>resolvePath</code> | <code>(template: string, context: ExpressionContext) =&gt; string</code> | Нет | — | Разрешить полный path expression без кодирования слешей либо URL-шаблон с кодированием каждого token как сегмента; полный path должен остаться локальным /api/. |
 
 ## FragmentComponentDefinition
 
@@ -517,7 +518,7 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>load</code> | <code>Omit&lt;DataSourceDefinition['load'], 'strategy'&gt; &amp; { strategy: 'onInit' \| 'onScopeInit' \| 'manual' }</code> | Нет | — | Политика lifecycle datasource или именованного schema source; см. strategy/reload/cache. |
+| <code>load</code> | <code>Omit&lt;DataSourceDefinition["load"], "strategy"&gt; &amp; {     strategy: "onInit" \| "onScopeInit" \| "manual";   }</code> | Нет | — | Политика lifecycle datasource или именованного schema source; см. strategy/reload/cache. |
 
 ## FragmentDataSourceDefinition.load[2]
 
@@ -525,7 +526,7 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>strategy</code> | <code>'onInit' \| 'onScopeInit' \| 'manual'</code> | Нет | — | Стартовая политика; допустимые значения зависят от datasource/scope или onDemand schema source. |
+| <code>strategy</code> | <code>"onInit" \| "onScopeInit" \| "manual"</code> | Нет | — | Стартовая политика; допустимые значения зависят от datasource/scope или onDemand schema source. |
 
 ## FragmentDefinition
 
@@ -539,7 +540,7 @@
 | <code>root</code> | <code>FragmentComponentDefinition</code> | Нет | — | Корень дерева View/Fragment; не содержит route-outlet. |
 | <code>schemaSources</code> | <code>Record&lt;string, SchemaSourceDefinition&gt;</code> | Да | — | Необязательный словарь именованных источников UI-определений; inline source не требует регистрации. |
 | <code>state</code> | <code>JsonObject</code> | Да | — | Начальный JSON шаблон локального state; default {}. На каждый scope создаётся независимая копия. |
-| <code>type</code> | <code>'fragment'</code> | Нет | — | Обязательный литерал fragment. Только явная оболочка создаёт новый локальный scope. |
+| <code>type</code> | <code>"fragment"</code> | Нет | — | Обязательный литерал fragment. Только явная оболочка создаёт новый локальный scope. |
 
 ## FragmentRenderBoundary
 
@@ -618,7 +619,7 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>request</code> | <code>SchemaRequestDefinition</code> | Нет | — | HTTP-конфигурация: method/path, параметры, query/body. Различия обработчиков URL описаны в data reference. |
+| <code>request</code> | <code>SchemaRequestSource</code> | Нет | — | HTTP-конфигурация: method/path, параметры, query/body. Различия обработчиков URL описаны в data reference. |
 
 ## JsonObject
 
@@ -672,7 +673,7 @@
 | <code>root</code> | <code>ComponentDefinition</code> | Нет | — | Корень дерева View/Fragment; не содержит route-outlet. |
 | <code>schemaSources</code> | <code>Record&lt;string, SchemaSourceDefinition&gt;</code> | Да | — | Необязательный словарь именованных источников UI-определений; inline source не требует регистрации. |
 | <code>state</code> | <code>JsonObject</code> | Нет | — | Локальное состояние или снимок Redux в данном контракте; реальные записи и шаблон FragmentDefinition различаются по разделу scopes. |
-| <code>type</code> | <code>'fragment'</code> | Нет | — | Discriminator контракта или имя generic реализации; разрешённые литералы перечислены в типе. |
+| <code>type</code> | <code>"fragment"</code> | Нет | — | Discriminator контракта или имя generic реализации; разрешённые литералы перечислены в типе. |
 
 ## NormalizedLoadedFragment
 
@@ -681,7 +682,7 @@
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
 | <code>definition</code> | <code>NormalizedFragmentDefinition</code> | Нет | — | Normalized fragment description; при scope=host root использует host, пустые dictionaries не создают новый RuntimeScope. |
-| <code>scope</code> | <code>'host' \| 'fragment'</code> | Нет | — | host означает legacy bare tree без дочернего scope; fragment означает самостоятельную активацию. |
+| <code>scope</code> | <code>"host" \| "fragment"</code> | Нет | — | host означает legacy bare tree без дочернего scope; fragment означает самостоятельную активацию. |
 
 ## PageHeaderProps
 
@@ -720,15 +721,18 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
+| <code>caption</code> | <code>string</code> | Да | — | Необязательный заголовок navigation; приходит через props/bindings, без встроенного branding. |
 | <code>children</code> | <code>ReactNode</code> | Да | — | Упорядоченный дочерний контент/узлы. В JSON составляйте дерево через ComponentDefinition.children. |
 | <code>error</code> | <code>string \| null</code> | Да | — | Текст ошибки/null, ошибка parser либо fallback-дерево — точная форма в типе. |
 | <code>expandedIds</code> | <code>string[]</code> | Да | — | Контролируемые канонические tree keys раскрытых узлов. |
+| <code>footerText</code> | <code>string</code> | Да | — | Необязательный текст footer navigation от host/schema; компонент не вычисляет connection status. |
 | <code>items</code> | <code>ApplicationNavigationItem[]</code> | Нет | — | Массив элементов известного компонента/проекции. Data shape задаётся контрактом items, не runtime. |
 | <code>loading</code> | <code>boolean</code> | Да | — | Флаг загрузки либо fallback-дерево SchemaOutlet; не подменяет lifecycle status. |
 | <code>onExpandedChange</code> | <code>(event: { value: string[] }) =&gt; void</code> | Да | — | Изменение раскрытия: NavigationGroup передаёт boolean, PrimaryNavigation — массив canonical keys; см. тип. |
 | <code>onRetry</code> | <code>() =&gt; void</code> | Да | — | Запрос повторения без payload; named action определяет реальную работу. |
 | <code>onRetryChildren</code> | <code>(event: { value: string }) =&gt; void</code> | Да | — | Повторить загрузку navigation DATA по canonical tree key в {value:string}. DataTreeRuntime генерирует этот callback. |
 | <code>onSelect</code> | <code>(event: { value: string; href: string }) =&gt; void</code> | Нет | — | Выбор элемента; payload указан в типе callback, обычно {value:id}, у UserList также user. |
+| <code>selectedHref</code> | <code>string</code> | Да | — | Контролируемый URL выбранного navigation item. Непустое значение имеет приоритет над selectedId, включая Back/Forward. |
 | <code>selectedId</code> | <code>string</code> | Да | — | Контролируемый идентификатор выделения; компонент не изменяет state самостоятельно. |
 
 ## PrimaryNavigationProps.onExpandedChange.payload.event
@@ -827,7 +831,7 @@
 | <code>message</code> | <code>string</code> | Нет | — | Текст уведомления/результата. notification handler преобразует результат выражения в строку. |
 | <code>reportId</code> | <code>string</code> | Нет | — | ID отчёта, к которому относится результат запуска. |
 | <code>rowCount</code> | <code>number</code> | Нет | — | Количество строк результата отчёта. |
-| <code>status</code> | <code>'completed'</code> | Нет | — | Состояние операции или бизнес-записи. Разрешённые значения перечислены в конкретном типе. |
+| <code>status</code> | <code>"completed"</code> | Нет | — | Состояние операции или бизнес-записи. Разрешённые значения перечислены в конкретном типе. |
 
 ## ReportSummary
 
@@ -843,7 +847,7 @@
 | <code>reportType</code> | <code>string</code> | Да | — | Отображаемая категория отчёта. |
 | <code>saved</code> | <code>boolean</code> | Да | — | Признак сохранённого отчёта. |
 | <code>scope</code> | <code>string</code> | Да | — | RuntimeScope, legacy тег app/view/fragment или host/fragment discriminator результата нормализации; см. тип строки. |
-| <code>status</code> | <code>'published' \| 'draft'</code> | Нет | — | Состояние операции или бизнес-записи. Разрешённые значения перечислены в конкретном типе. |
+| <code>status</code> | <code>"published" \| "draft"</code> | Нет | — | Состояние операции или бизнес-записи. Разрешённые значения перечислены в конкретном типе. |
 | <code>title</code> | <code>string</code> | Нет | — | Название/заголовок. У View это метаданные; у UI-компонентов видимый заголовок. |
 | <code>updatedAt</code> | <code>string</code> | Нет | — | Дата/строка обновления бизнес-записи. |
 
@@ -857,7 +861,15 @@
 | <code>method</code> | <code>"GET" \| "POST" \| "PUT" \| "DELETE"</code> | Нет | — | HTTP-метод; RequestDefinition требует его явно, schema/children source по умолчанию GET. |
 | <code>params</code> | <code>JsonObject</code> | Да | — | Значения для {name} в request.path; fetchTransport кодирует каждый параметр как сегмент. |
 | <code>path</code> | <code>string</code> | Нет | — | Путь запроса/маршрута либо массив сегментов scoped-адреса; тип различает эти контракты. |
-| <code>query</code> | <code>JsonObject</code> | Да | — | Query-параметры запроса; transport пропускает null/undefined/пустую строку, остальные преобразует String. |
+| <code>query</code> | <code>JsonObject</code> | Да | — | Query-параметры запроса; SchemaRequestDefinition также допускает StateExpression, возвращающее весь объект. Transport пропускает null/undefined/пустую строку и преобразует остальные значения String. |
+
+## RequestPolicy
+
+Источник: [src/runtime/datasource/requestPolicy.ts](../../src/runtime/datasource/requestPolicy.ts).
+
+| Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
+| --- | --- | --- | --- | --- |
+| <code>allowedPathPrefixes</code> | <code>readonly string[]</code> | Нет | — | Разрешённые префиксы нормализованного локального HTTP pathname. Host default: /api/. Для всех локальных путей явно укажите /. |
 
 ## RouteDefinition
 
@@ -890,20 +902,21 @@
 | <code>actionRegistry</code> | <code>ActionRegistry</code> | Нет | <code>createActionRegistry()</code> | Общий registry generic action типов environment. |
 | <code>applicationScope</code> | <code>RuntimeScope \| null</code> | Нет | — | Корневой RuntimeScope приложения текущей иерархии. |
 | <code>childScopes</code> | <code>(parent: RuntimeScope) =&gt; RuntimeScope[]</code> | Нет | — | Получить текущих непосредственных потомков scope из environment registry. |
-| <code>constructor</code> | <code>(readonly navigate: (to: string) =&gt; void, readonly notify: (message: string, tone: 'success' \| 'error' \| 'info') =&gt; void, readonly transport: ApiTransport = fetchTransport)</code> | Нет | — | Создать объект указанного класса. Аргументы и defaults приведены в сигнатуре; владение/инициализация описаны в runtime-layers. |
+| <code>constructor</code> | <code>(readonly navigate: (to: string) =&gt; void, readonly notify: (       message: string,       tone: "success" \| "error" \| "info",     ) =&gt; void, transport?: ApiTransport, readonly requestPolicy: RequestPolicy = defaultRequestPolicy)</code> | Нет | — | Создать объект указанного класса. Аргументы и defaults приведены в сигнатуре; владение/инициализация описаны в runtime-layers. |
 | <code>dependencyGraph</code> | <code>DependencyGraph</code> | Нет | <code>new DependencyGraph()</code> | Общий scope-qualified граф ресурсов. Не управляет React rendering. |
 | <code>diagnostics</code> | <code>Diagnostics</code> | Нет | <code>new Diagnostics()</code> | Read-only для business поведения diagnostic stream environment. |
 | <code>ensureApplicationScope</code> | <code>() =&gt; RuntimeScope</code> | Нет | — | Совместимый bootstrap application для standalone ViewRuntime; тот же store, позже возможна controlled promotion. |
 | <code>getScope</code> | <code>(scopeId: string) =&gt; RuntimeScope \| undefined</code> | Нет | — | Найти живой RuntimeScope по точной identity. |
 | <code>listScopes</code> | <code>() =&gt; readonly RuntimeScope[]</code> | Нет | — | Получить текущую иерархию как список registry handles; live objects остаются вне Redux. |
 | <code>navigate</code> | <code>(to: string) =&gt; void</code> | Нет | — | Инъецируемый сервис навигации; default handler передаёт разрешённую строку to без URL allowlist. |
-| <code>notify</code> | <code>(message: string, tone: 'success' \| 'error' \| 'info') =&gt; void</code> | Нет | — | Инъецируемый сервис уведомлений message/tone; business компоненты его напрямую не вызывают. |
+| <code>notify</code> | <code>(       message: string,       tone: "success" \| "error" \| "info",     ) =&gt; void</code> | Нет | — | Инъецируемый сервис уведомлений message/tone; business компоненты его напрямую не вызывают. |
 | <code>register</code> | <code>(manager: DataSourceManager) =&gt; () =&gt; void</code> | Нет | — | Internal: зарегистрировать scope-owned DataSourceManager, его graph edges и ownership token; вернуть unregister callback. |
 | <code>registerScope</code> | <code>(scope: RuntimeScope, adoptParent: (parent: RuntimeScope) =&gt; void) =&gt; void</code> | Нет | — | Internal: зарегистрировать owner handle; новая View disposes прежнюю; controlled bootstrap app promotion меняет parent references. |
+| <code>requestPolicy</code> | <code>RequestPolicy</code> | Нет | <code>defaultRequestPolicy</code> | Host policy для resolved HTTP URL; общая для schema, datasource, inline DATA, action и default transport. |
 | <code>resolver</code> | <code>ExpressionResolver</code> | Нет | <code>new ExpressionResolver()</code> | Общий безопасный ExpressionResolver без eval. |
 | <code>schemaCache</code> | <code>SchemaFragmentCache</code> | Нет | — | Общее хранилище JSON definitions и отдельной transient coordination. |
 | <code>store</code> | <code>EnhancedStore&lt;RuntimeState, UnknownAction, Tuple&lt;[StoreEnhancer&lt;{ dispatch: ((action: Action&lt;"listenerMiddleware/add"&gt;) =&gt; UnsubscribeListener) &amp; ThunkDispatch&lt;RuntimeState, undefined, UnknownAction&gt;; }&gt;, StoreEnhancer]&gt;&gt;</code> | Нет | — | Один store на environment и все его application/view/fragment scopes. Независимые playground demos имеют отдельные environments. |
-| <code>transport</code> | <code>ApiTransport</code> | Нет | <code>fetchTransport</code> | Инъецируемая функция (request, AbortSignal) → Promise результата API. |
+| <code>transport</code> | <code>ApiTransport</code> | Нет | — | Инъецируемая функция (request, AbortSignal) → Promise результата API. |
 | <code>unregisterScope</code> | <code>(scope: RuntimeScope) =&gt; void</code> | Нет | — | Удалить scope из environment ownership registry; обычно вызывается RuntimeScope.dispose. |
 | <code>viewScope</code> | <code>RuntimeScope \| null</code> | Нет | — | Ближайшая owning View или null для application-owned дерева. |
 
@@ -949,7 +962,7 @@
 | <code>dataSources</code> | <code>Record&lt;string, DataSourceDefinition&gt;</code> | Нет | — | Словарь локальных источников данных либо принадлежащий scope DataSourceManager для API-контракта. |
 | <code>id</code> | <code>string</code> | Нет | — | ID определения application/view; не сохраняемый instance identifier. |
 | <code>initialState</code> | <code>JsonObject</code> | Нет | — | Шаблон локального состояния Application/View; клонируется при инициализации scope. |
-| <code>schemaSources</code> | <code>Record&lt;string, import('../schema/types').SchemaSourceDefinition&gt;</code> | Да | — | Необязательный словарь именованных источников UI-определений; inline source не требует регистрации. |
+| <code>schemaSources</code> | <code>Record&lt;     string,     import("../schema/types").SchemaSourceDefinition   &gt;</code> | Да | — | Необязательный словарь именованных источников UI-определений; inline source не требует регистрации. |
 
 ## RuntimeState
 
@@ -960,8 +973,8 @@
 | <code>appData</code> | <code>Record&lt;string, DataEntry&gt;</code> | Нет | — | Словарь DataEntry application scope. |
 | <code>applicationInstance</code> | <code>string \| null</code> | Нет | — | Текущий application scopeId; у SchemaFragmentCache до регистрации корня значение standalone. |
 | <code>appState</code> | <code>StateObject</code> | Нет | — | Локальное состояние application scope в едином Redux store. |
-| <code>fragments</code> | <code>Record&lt;string, { state: StateObject; data: Record&lt;string, DataEntry&gt; }&gt;</code> | Нет | — | Словарь живых fragment scopeId → {state,data}; cache definitions находятся отдельно. |
-| <code>schemaFragments</code> | <code>import('../schema/types').SchemaFragmentState</code> | Нет | — | Служебные состояния загрузки UI-определений; не публичный expression namespace. У scope API — его manager. |
+| <code>fragments</code> | <code>Record&lt;     string,     { state: StateObject; data: Record&lt;string, DataEntry&gt; }   &gt;</code> | Нет | — | Словарь живых fragment scopeId → {state,data}; cache definitions находятся отдельно. |
+| <code>schemaFragments</code> | <code>import("../schema/types").SchemaFragmentState</code> | Нет | — | Служебные состояния загрузки UI-определений; не публичный expression namespace. У scope API — его manager. |
 | <code>viewData</code> | <code>Record&lt;string, DataEntry&gt;</code> | Нет | — | Словарь DataEntry активной View. |
 | <code>viewInstance</code> | <code>string \| null</code> | Нет | — | scopeId активной View или null; guard устаревших записей. |
 | <code>viewState</code> | <code>StateObject</code> | Нет | — | Состояние единственной активной View этого environment. |
@@ -972,7 +985,7 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>applicationInstance</code> | <code>string</code> | Нет | <code>'standalone'</code> | Текущий application scopeId; у SchemaFragmentCache до регистрации корня значение standalone. |
+| <code>applicationInstance</code> | <code>string</code> | Нет | <code>"standalone"</code> | Текущий application scopeId; у SchemaFragmentCache до регистрации корня значение standalone. |
 | <code>clear</code> | <code>() =&gt; void</code> | Нет | — | Удалить cache entries/statuses и прервать pending schema requests; вызывается при application disposal. |
 | <code>clearView</code> | <code>(instance: string) =&gt; void</code> | Нет | — | Удалить schema resources с указанным cache owner; имя историческое, используется также для другого scope owner. |
 | <code>constructor</code> | <code>(private readonly environment: RuntimeEnvironment)</code> | Нет | — | Создать объект указанного класса. Аргументы и defaults приведены в сигнатуре; владение/инициализация описаны в runtime-layers. |
@@ -997,7 +1010,7 @@
 | <code>schema</code> | <code>LoadedSchemaDefinition \| null</code> | Нет | — | JSON загруженного определения или null; не RuntimeScope/ReactElement. |
 | <code>scope</code> | <code>Scope</code> | Нет | — | Legacy тег scope, инициировавшего schema resource; owner отдельно задаёт cache owner. |
 | <code>source</code> | <code>string</code> | Нет | — | Источник: expression у BindingDefinition, локальное имя datasource у action, имя/inline source у SchemaOutlet. Контекст определяет значение. |
-| <code>status</code> | <code>'loading' \| 'success' \| 'error'</code> | Нет | — | loading/success/error определения UI; idle/cancelled не значения этого контракта. |
+| <code>status</code> | <code>"loading" \| "success" \| "error"</code> | Нет | — | loading/success/error определения UI; idle/cancelled не значения этого контракта. |
 
 ## SchemaFragmentManager
 
@@ -1046,7 +1059,7 @@
 | <code>column</code> | <code>number</code> | Да | — | Номер колонки parse error, если доступен. |
 | <code>line</code> | <code>number</code> | Да | — | Номер строки parse error, если доступен из сообщения JSON parser. |
 | <code>message</code> | <code>string</code> | Нет | — | Текст уведомления/результата. notification handler преобразует результат выражения в строку. |
-| <code>stage</code> | <code>'parse' \| 'validation'</code> | Нет | — | Этап ошибки parse либо validation. |
+| <code>stage</code> | <code>"parse" \| "validation"</code> | Нет | — | Этап ошибки parse либо validation. |
 
 ## SchemaOutletDefinition
 
@@ -1054,10 +1067,10 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>enabled</code> | <code>import('../shared/json').Expression \| boolean</code> | Да | — | Boolean/выражение активации SchemaOutlet в scope родителя; по умолчанию true. |
-| <code>key</code> | <code>FragmentKey \| import('../shared/json').Expression</code> | Да | — | Пользовательский scalar key outlet, полный tree key либо внутренний ключ — назначение уточняет контракт. |
+| <code>enabled</code> | <code>import("../shared/json").Expression \| boolean</code> | Да | — | Boolean/выражение активации SchemaOutlet в scope родителя; по умолчанию true. |
+| <code>key</code> | <code>FragmentKey \| import("../shared/json").Expression</code> | Да | — | Пользовательский scalar key outlet, полный tree key либо внутренний ключ — назначение уточняет контракт. |
 | <code>source</code> | <code>SchemaSource</code> | Нет | — | Источник: expression у BindingDefinition, локальное имя datasource у action, имя/inline source у SchemaOutlet. Контекст определяет значение. |
-| <code>type</code> | <code>'schema-outlet'</code> | Нет | — | Discriminator контракта или имя generic реализации; разрешённые литералы перечислены в типе. |
+| <code>type</code> | <code>"schema-outlet"</code> | Нет | — | Discriminator контракта или имя generic реализации; разрешённые литералы перечислены в типе. |
 
 ## SchemaRequestDefinition
 
@@ -1066,9 +1079,9 @@
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
 | <code>body</code> | <code>JsonValue</code> | Да | — | JSON тело запроса; при наличии fetchTransport сериализует JSON и ставит Content-Type. |
-| <code>method</code> | <code>'GET' \| 'POST'</code> | Да | — | HTTP-метод; RequestDefinition требует его явно, schema/children source по умолчанию GET. |
+| <code>method</code> | <code>"GET" \| "POST"</code> | Да | — | HTTP-метод; RequestDefinition требует его явно, schema/children source по умолчанию GET. |
 | <code>path</code> | <code>string</code> | Нет | — | Путь запроса/маршрута либо массив сегментов scoped-адреса; тип различает эти контракты. |
-| <code>query</code> | <code>JsonObject</code> | Да | — | Query-параметры запроса; transport пропускает null/undefined/пустую строку, остальные преобразует String. |
+| <code>query</code> | <code>JsonObject \| StateExpression</code> | Да | — | Query-параметры запроса; SchemaRequestDefinition также допускает StateExpression, возвращающее весь объект. Transport пропускает null/undefined/пустую строку и преобразует остальные значения String. |
 
 ## SchemaSourceDefinition
 
@@ -1076,8 +1089,8 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>load</code> | <code>{ strategy: 'onDemand' } &amp; DefinitionCacheSelection</code> | Нет | — | Политика lifecycle datasource или именованного schema source; см. strategy/reload/cache. |
-| <code>request</code> | <code>SchemaRequestDefinition</code> | Нет | — | HTTP-конфигурация: method/path, параметры, query/body. Различия обработчиков URL описаны в data reference. |
+| <code>load</code> | <code>{ strategy: "onDemand" } &amp; DefinitionCacheSelection</code> | Нет | — | Политика lifecycle datasource или именованного schema source; см. strategy/reload/cache. |
+| <code>request</code> | <code>SchemaRequestSource</code> | Нет | — | Object SchemaRequestDefinition либо StateExpression, возвращающее весь request. Во втором случае поля — уже буквальные данные инициатора. |
 
 ## SchemaSourceDefinition.load[1]
 
@@ -1085,7 +1098,7 @@
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
-| <code>strategy</code> | <code>'onDemand'</code> | Нет | — | Стартовая политика; допустимые значения зависят от datasource/scope или onDemand schema source. |
+| <code>strategy</code> | <code>"onDemand"</code> | Нет | — | Стартовая политика; допустимые значения зависят от datasource/scope или onDemand schema source. |
 
 ## ScopeActivation
 
@@ -1131,10 +1144,10 @@
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
 | <code>cacheOwner</code> | <code>string</code> | Нет | — | scopeId владельца JSON definition cache, не runtime-родитель фрагмента. |
-| <code>definitionCache</code> | <code>import('../schema/types').DefinitionCachePolicy</code> | Нет | — | Снимок policy JSON-кеша для tooling; сам не управляет retention. |
-| <code>key</code> | <code>import('../schema/types').FragmentKey</code> | Нет | — | Снимок resolved пользовательского scalar key outlet. Не полный составной resource id. |
+| <code>definitionCache</code> | <code>import("../schema/types").DefinitionCachePolicy</code> | Нет | — | Снимок policy JSON-кеша для tooling; сам не управляет retention. |
+| <code>key</code> | <code>import("../schema/types").FragmentKey</code> | Нет | — | Снимок resolved пользовательского scalar key outlet. Не полный составной resource id. |
 | <code>requestPath</code> | <code>string</code> | Нет | — | Уже вычисленный HTTP path приобретения UI-определения. |
-| <code>scopeLifetime</code> | <code>import('../schema/types').FragmentScopeLifetime</code> | Нет | — | Снимок activation/outlet lifetime для tooling; сама lifecycle logic остаётся SchemaOutlet. |
+| <code>scopeLifetime</code> | <code>import("../schema/types").FragmentScopeLifetime</code> | Нет | — | Снимок activation/outlet lifetime для tooling; сама lifecycle logic остаётся SchemaOutlet. |
 | <code>source</code> | <code>string</code> | Нет | — | Источник: expression у BindingDefinition, локальное имя datasource у action, имя/inline source у SchemaOutlet. Контекст определяет значение. |
 
 ## SearchInputProps
@@ -1316,6 +1329,7 @@
 | <code>scopedChangedPaths</code> | <code>readonly ScopedChangedPath[]</code> | Да | — | Фактические изменённые адреса со scopeId/area/path. |
 | <code>target</code> | <code>string</code> | Да | — | Относительный путь записи в текущее состояние. Namespace-префикс $ запрещён. |
 | <code>value</code> | <code>unknown</code> | Да | — | Значение/контролируемый prop или payload callback; конкретный тип и источник указаны в строке. В actions вычисляются выражения. |
+| <code>viewSchema</code> | <code>{ pathname: string }</code> | Да | — | Метаданные diagnostics для загрузки полной ViewDefinition. Отдельны от fragment schemaResource и datasource loading. |
 
 ## TraceMetadata.resource
 
@@ -1337,6 +1351,14 @@
 | <code>key</code> | <code>import('../schema/types').FragmentKey</code> | Нет | — | Пользовательский scalar key outlet, полный tree key либо внутренний ключ — назначение уточняет контракт. |
 | <code>owner</code> | <code>string</code> | Нет | — | Владелец JSON-cache либо владелец бизнес-записи ReportDetail; эти сущности различаются типом. |
 | <code>source</code> | <code>string</code> | Нет | — | Источник: expression у BindingDefinition, локальное имя datasource у action, имя/inline source у SchemaOutlet. Контекст определяет значение. |
+
+## TraceMetadata.viewSchema
+
+Источник: [src/runtime/shared/json.ts](../../src/runtime/shared/json.ts).
+
+| Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
+| --- | --- | --- | --- | --- |
+| <code>pathname</code> | <code>string</code> | Нет | — | Browser pathname, включая hosting prefix, без query string/hash. Сервер сопоставляет его ViewDefinition. |
 
 ## TreeDataNode
 
@@ -1440,7 +1462,7 @@
 | <code>location</code> | <code>string</code> | Да | — | Отображаемая локация пользователя. |
 | <code>name</code> | <code>string</code> | Нет | — | Отображаемое имя данных/параметра; у TreeDataNode используется label либо name. |
 | <code>role</code> | <code>string</code> | Нет | — | Роль пользователя для отображения; не enforcement разрешений. |
-| <code>status</code> | <code>'active' \| 'invited' \| 'disabled'</code> | Нет | — | Состояние операции или бизнес-записи. Разрешённые значения перечислены в конкретном типе. |
+| <code>status</code> | <code>"active" \| "invited" \| "disabled"</code> | Нет | — | Состояние операции или бизнес-записи. Разрешённые значения перечислены в конкретном типе. |
 
 ## ValueChange
 
@@ -1485,14 +1507,45 @@
 | --- | --- | --- | --- | --- |
 | <code>constructor</code> | <code>(definition: ViewDefinition, environment: RuntimeEnvironment, parentScope?: RuntimeScope)</code> | Нет | — | Создать объект указанного класса. Аргументы и defaults приведены в сигнатуре; владение/инициализация описаны в runtime-layers. |
 
+## ViewSchemaLease
+
+Источник: [src/runtime/routing/ViewSchemaLoader.ts](../../src/runtime/routing/ViewSchemaLoader.ts).
+
+| Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
+| --- | --- | --- | --- | --- |
+| <code>promise</code> | <code>Promise&lt;ViewDefinition&gt;</code> | Нет | — | Promise окончания transient schema acquisition; не cached definition. |
+| <code>release</code> | <code>() =&gt; void</code> | Нет | — | Идемпотентно освобождает consumer lease. Last release в microtask отменяет запрос и удаляет временную запись. |
+
 ## ViewSchemaLoader
 
 Источник: [src/runtime/routing/ViewSchemaLoader.ts](../../src/runtime/routing/ViewSchemaLoader.ts).
 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
+| <code>acquire</code> | <code>(pathname: string, source: ViewSourceDefinition, scope: RuntimeScope, registry: ComponentRegistry, generation?: number, preparedRequest?: RequestDefinition \| undefined) =&gt; ViewSchemaLease</code> | Нет | — | Получает lease HTTP ViewDefinition по pathname и application scope. Dedup активных consumers; release отменяет последнего, generation задаёт retry. Store/RuntimeScope не создаёт. |
 | <code>constructor</code> | <code>(private readonly views: Readonly&lt;Record&lt;string, ViewDefinition&gt;&gt;)</code> | Нет | — | Создать объект указанного класса. Аргументы и defaults приведены в сигнатуре; владение/инициализация описаны в runtime-layers. |
 | <code>load</code> | <code>(viewId: string) =&gt; ViewDefinition</code> | Нет | — | Политика lifecycle datasource или именованного schema source; см. strategy/reload/cache. |
+| <code>prepare</code> | <code>(pathname: string, source: ViewSourceDefinition, scope: RuntimeScope, state?: RuntimeState) =&gt; RequestDefinition</code> | Нет | — | Чисто вычислить resolved schema request, cache owner и resource identity по snapshot родителя. |
+
+## ViewSchemaLoader.PendingView
+
+Источник: [src/runtime/routing/ViewSchemaLoader.ts](../../src/runtime/routing/ViewSchemaLoader.ts).
+
+| Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
+| --- | --- | --- | --- | --- |
+| <code>consumers</code> | <code>number</code> | Нет | — | Количество владельцев lease общего schema request. |
+| <code>controller</code> | <code>AbortController</code> | Нет | — | Transient AbortController приобретения ресурса; не помещается в definition JSON/Redux. |
+| <code>promise</code> | <code>Promise&lt;ViewDefinition&gt;</code> | Нет | — | Promise окончания transient schema acquisition; не cached definition. |
+
+## ViewSourceDefinition
+
+Источник: [src/runtime/routing/types.ts](../../src/runtime/routing/types.ts).
+
+| Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
+| --- | --- | --- | --- | --- |
+| <code>onLoaded</code> | <code>string</code> | Да | — | Имя локального application action после успешной загрузки/валидации View; payload содержит pathname, viewId и title. |
+| <code>pathQueryParam</code> | <code>string</code> | Да | — | Имя query-параметра, куда loader помещает browser pathname. По умолчанию path; исходное query-значение с этим именем заменяется. |
+| <code>request</code> | <code>SchemaRequestSource</code> | Нет | — | Object SchemaRequestDefinition либо StateExpression, возвращающее весь request. Во втором случае поля — уже буквальные данные инициатора. |
 
 ## Полные объявления типов и наследование
 
@@ -1575,7 +1628,7 @@ export interface DataEntry {
 [src/runtime/schema/types.ts](../../src/runtime/schema/types.ts)
 
 ~~~typescript
-export type DefinitionCachePolicy = 'none' | 'scope' | 'view' | 'application';
+export type DefinitionCachePolicy = "none" | "scope" | "view" | "application";
 ~~~
 
 ### DefinitionCacheSelection
@@ -1593,7 +1646,20 @@ export type DefinitionCacheSelection =
 [src/runtime/schema/types.ts](../../src/runtime/schema/types.ts)
 
 ~~~typescript
-export interface SchemaRequestDefinition { method?: 'GET' | 'POST'; path: string; query?: JsonObject; body?: JsonValue }
+export interface SchemaRequestDefinition {
+  method?: "GET" | "POST";
+  path: string;
+  query?: JsonObject | StateExpression;
+  body?: JsonValue;
+}
+~~~
+
+### SchemaRequestSource
+
+[src/runtime/schema/types.ts](../../src/runtime/schema/types.ts)
+
+~~~typescript
+export type SchemaRequestSource = SchemaRequestDefinition | StateExpression;
 ~~~
 
 ### SchemaSourceDefinition
@@ -1602,8 +1668,8 @@ export interface SchemaRequestDefinition { method?: 'GET' | 'POST'; path: string
 
 ~~~typescript
 export interface SchemaSourceDefinition {
-  request: SchemaRequestDefinition;
-  load: { strategy: 'onDemand' } & DefinitionCacheSelection;
+  request: SchemaRequestSource;
+  load: { strategy: "onDemand" } & DefinitionCacheSelection;
 }
 ~~~
 
@@ -1612,7 +1678,9 @@ export interface SchemaSourceDefinition {
 [src/runtime/schema/types.ts](../../src/runtime/schema/types.ts)
 
 ~~~typescript
-export type InlineSchemaSource = { request: SchemaRequestDefinition } & DefinitionCacheSelection;
+export type InlineSchemaSource = {
+  request: SchemaRequestSource;
+} & DefinitionCacheSelection;
 ~~~
 
 ### SchemaSource
@@ -1628,7 +1696,7 @@ export type SchemaSource = string | InlineSchemaSource;
 [src/runtime/schema/types.ts](../../src/runtime/schema/types.ts)
 
 ~~~typescript
-export type FragmentScopeLifetime = 'activation' | 'outlet';
+export type FragmentScopeLifetime = "activation" | "outlet";
 ~~~
 
 ### FragmentKey
@@ -1652,7 +1720,7 @@ export interface SchemaFragmentEntry {
   /** Request origin, distinct from the definition cache owner. */
   requestingScopeId?: string;
   cache: DefinitionCachePolicy;
-  status: 'loading' | 'success' | 'error';
+  status: "loading" | "success" | "error";
   loading: boolean;
   schema: LoadedSchemaDefinition | null;
   error: string | null;
@@ -1676,10 +1744,10 @@ export type SchemaFragmentState = Record<string, SchemaFragmentEntry>;
 
 ~~~typescript
 export interface SchemaOutletDefinition extends ComponentDefinition {
-  type: 'schema-outlet';
+  type: "schema-outlet";
   source: SchemaSource;
-  enabled?: import('../shared/json').Expression | boolean;
-  key?: FragmentKey | import('../shared/json').Expression;
+  enabled?: import("../shared/json").Expression | boolean;
+  key?: FragmentKey | import("../shared/json").Expression;
 }
 ~~~
 
@@ -1793,6 +1861,7 @@ export type Expression = ExpressionRoot | `${ExpressionRoot}.${string}`;
 
 ~~~typescript
 export interface TraceMetadata {
+  viewSchema?: { pathname: string };
   scope?: Scope;
   instance?: string;
   actionId?: string;
@@ -1841,7 +1910,9 @@ export interface BindingDefinition {
 [src/runtime/rendering/types.ts](../../src/runtime/rendering/types.ts)
 
 ~~~typescript
-export interface HandlerDefinition { action: string }
+export interface HandlerDefinition {
+  action: string;
+}
 ~~~
 
 ### ComponentDefinition
@@ -1858,10 +1929,12 @@ export interface ComponentDefinition {
   handlers?: Record<string, HandlerDefinition>;
   children?: ComponentDefinition[];
   /** Infrastructure configuration, consumed only by registered schema-outlet. */
-  source?: import('../schema/types').SchemaSource;
-  lifecycle?: { scopeLifetime?: import('../schema/types').FragmentScopeLifetime };
+  source?: import("../schema/types").SchemaSource;
+  lifecycle?: {
+    scopeLifetime?: import("../schema/types").FragmentScopeLifetime;
+  };
   enabled?: Expression | boolean;
-  key?: import('../shared/json').JsonValue;
+  key?: import("../shared/json").JsonValue;
   loading?: ComponentDefinition;
   error?: ComponentDefinition;
 }
@@ -1921,7 +1994,10 @@ export interface ScopedExecutionContext extends ExecutionContext {
 [src/runtime/fragment/types.ts](../../src/runtime/fragment/types.ts)
 
 ~~~typescript
-export interface FragmentComponentDefinition extends Omit<ComponentDefinition, 'id' | 'children' | 'loading' | 'error'> {
+export interface FragmentComponentDefinition extends Omit<
+  ComponentDefinition,
+  "id" | "children" | "loading" | "error"
+> {
   id?: string;
   children?: FragmentComponentDefinition[];
   loading?: FragmentComponentDefinition;
@@ -1934,8 +2010,13 @@ export interface FragmentComponentDefinition extends Omit<ComponentDefinition, '
 [src/runtime/fragment/types.ts](../../src/runtime/fragment/types.ts)
 
 ~~~typescript
-export interface FragmentDataSourceDefinition extends Omit<DataSourceDefinition, 'load'> {
-  load: Omit<DataSourceDefinition['load'], 'strategy'> & { strategy: 'onInit' | 'onScopeInit' | 'manual' };
+export interface FragmentDataSourceDefinition extends Omit<
+  DataSourceDefinition,
+  "load"
+> {
+  load: Omit<DataSourceDefinition["load"], "strategy"> & {
+    strategy: "onInit" | "onScopeInit" | "manual";
+  };
 }
 ~~~
 
@@ -1945,7 +2026,7 @@ export interface FragmentDataSourceDefinition extends Omit<DataSourceDefinition,
 
 ~~~typescript
 export interface FragmentDefinition {
-  type: 'fragment';
+  type: "fragment";
   id?: string;
   state?: JsonObject;
   dataSources?: Record<string, FragmentDataSourceDefinition>;
@@ -1961,7 +2042,7 @@ export interface FragmentDefinition {
 
 ~~~typescript
 export interface NormalizedFragmentDefinition {
-  type: 'fragment';
+  type: "fragment";
   id: string;
   state: JsonObject;
   dataSources: Record<string, DataSourceDefinition>;
@@ -1976,7 +2057,9 @@ export interface NormalizedFragmentDefinition {
 [src/runtime/fragment/types.ts](../../src/runtime/fragment/types.ts)
 
 ~~~typescript
-export type LoadedSchemaDefinition = FragmentComponentDefinition | FragmentDefinition;
+export type LoadedSchemaDefinition =
+  | FragmentComponentDefinition
+  | FragmentDefinition;
 ~~~
 
 ### NormalizedLoadedFragment
@@ -1986,7 +2069,7 @@ export type LoadedSchemaDefinition = FragmentComponentDefinition | FragmentDefin
 ~~~typescript
 export interface NormalizedLoadedFragment {
   /** Legacy response wrappers retain the host's state/actions and create no scope. */
-  scope: 'host' | 'fragment';
+  scope: "host" | "fragment";
   definition: NormalizedFragmentDefinition;
 }
 ~~~
@@ -1996,7 +2079,24 @@ export interface NormalizedLoadedFragment {
 [src/runtime/routing/types.ts](../../src/runtime/routing/types.ts)
 
 ~~~typescript
-export interface RouteDefinition { path: string; viewId: string }
+export interface RouteDefinition {
+  path: string;
+  viewId: string;
+}
+~~~
+
+### ViewSourceDefinition
+
+[src/runtime/routing/types.ts](../../src/runtime/routing/types.ts)
+
+~~~typescript
+export interface ViewSourceDefinition {
+  request: SchemaRequestSource;
+  /** Application-local named action with {pathname, viewId, title}. */
+  onLoaded?: string;
+  /** Query parameter receiving the browser pathname. Defaults to path. */
+  pathQueryParam?: string;
+}
 ~~~
 
 ### ViewDefinition
@@ -2004,7 +2104,10 @@ export interface RouteDefinition { path: string; viewId: string }
 [src/runtime/view/types.ts](../../src/runtime/view/types.ts)
 
 ~~~typescript
-export interface ViewDefinition extends ScopeDefinition { title: string; root: ComponentDefinition }
+export interface ViewDefinition extends ScopeDefinition {
+  title: string;
+  root: ComponentDefinition;
+}
 ~~~
 
 ### ApplicationDefinition
@@ -2014,6 +2117,7 @@ export interface ViewDefinition extends ScopeDefinition { title: string; root: C
 ~~~typescript
 export interface ApplicationDefinition extends ScopeDefinition {
   shell: ComponentDefinition;
+  viewSource?: ViewSourceDefinition;
   routes: RouteDefinition[];
   views: Record<string, ViewDefinition>;
 }
@@ -2025,7 +2129,10 @@ export interface ApplicationDefinition extends ScopeDefinition {
 
 ~~~typescript
 export interface RuntimeScopeDefinition {
-  schemaSources?: Record<string, import('../schema/types').SchemaSourceDefinition>;
+  schemaSources?: Record<
+    string,
+    import("../schema/types").SchemaSourceDefinition
+  >;
   id: string;
   initialState: JsonObject;
   dataSources: Record<string, DataSourceDefinition>;
@@ -2047,11 +2154,11 @@ export type ScopeDefinition = RuntimeScopeDefinition;
 
 ~~~typescript
 export interface ScopeOrigin {
-  readonly definitionCache: import('../schema/types').DefinitionCachePolicy;
-  readonly scopeLifetime: import('../schema/types').FragmentScopeLifetime;
+  readonly definitionCache: import("../schema/types").DefinitionCachePolicy;
+  readonly scopeLifetime: import("../schema/types").FragmentScopeLifetime;
   readonly cacheOwner: string;
   readonly source: string;
-  readonly key: import('../schema/types').FragmentKey;
+  readonly key: import("../schema/types").FragmentKey;
   readonly requestPath: string;
 }
 ~~~
@@ -2062,10 +2169,13 @@ export interface ScopeOrigin {
 
 ~~~typescript
 export interface RuntimeState {
-  fragments: Record<string, { state: StateObject; data: Record<string, DataEntry> }>;
+  fragments: Record<
+    string,
+    { state: StateObject; data: Record<string, DataEntry> }
+  >;
   /** Internal application identity, mirroring the existing view guard. */
   applicationInstance: string | null;
-  schemaFragments: import('../schema/types').SchemaFragmentState;
+  schemaFragments: import("../schema/types").SchemaFragmentState;
   appState: StateObject;
   appData: Record<string, DataEntry>;
   viewState: StateObject;
@@ -2082,11 +2192,21 @@ export interface RuntimeState {
 export interface ExpressionContext {
   state: RuntimeState;
   /** Read roots from this scope's addresses in the supplied Redux snapshot. */
-  scope?: import('./RuntimeScope').RuntimeScope;
+  scope?: import("./RuntimeScope").RuntimeScope;
   /** @deprecated Fragment-only address retained for Task 2 callers. Prefer scope. */
   scopeId?: string;
   event?: unknown;
   response?: unknown;
+}
+~~~
+
+### RequestPolicy
+
+[src/runtime/datasource/requestPolicy.ts](../../src/runtime/datasource/requestPolicy.ts)
+
+~~~typescript
+export interface RequestPolicy {
+  readonly allowedPathPrefixes: readonly string[];
 }
 ~~~
 
@@ -2133,7 +2253,7 @@ export type RuntimeDependencyObserver = (
 [src/runtime/redux/createRuntimeStore.ts](../../src/runtime/redux/createRuntimeStore.ts)
 
 ~~~typescript
-export type RuntimeStore = ReturnType<typeof createRuntimeStore>['store'];
+export type RuntimeStore = ReturnType<typeof createRuntimeStore>["store"];
 ~~~
 
 ### ApiTransport
@@ -2194,7 +2314,9 @@ export type ActionHandler<K extends ActionType> = (
 [src/runtime/schema/SchemaFragmentManager.ts](../../src/runtime/schema/SchemaFragmentManager.ts)
 
 ~~~typescript
-type ValidateFragment = (schema: unknown) => asserts schema is LoadedSchemaDefinition;
+type ValidateFragment = (
+  schema: unknown,
+) => asserts schema is LoadedSchemaDefinition;
 ~~~
 
 ### SchemaFragmentManager.CachedDefinition
@@ -2202,7 +2324,11 @@ type ValidateFragment = (schema: unknown) => asserts schema is LoadedSchemaDefin
 [src/runtime/schema/SchemaFragmentManager.ts](../../src/runtime/schema/SchemaFragmentManager.ts)
 
 ~~~typescript
-interface CachedDefinition { owner: string; cache: DefinitionCachePolicy; schema: LoadedSchemaDefinition }
+interface CachedDefinition {
+  owner: string;
+  cache: DefinitionCachePolicy;
+  schema: LoadedSchemaDefinition;
+}
 ~~~
 
 ### SchemaFragmentManager.Acquisition
@@ -2232,12 +2358,48 @@ export interface PreparedSchemaRequest {
 }
 ~~~
 
+### ViewSchemaLease
+
+[src/runtime/routing/ViewSchemaLoader.ts](../../src/runtime/routing/ViewSchemaLoader.ts)
+
+~~~typescript
+export interface ViewSchemaLease {
+  promise: Promise<ViewDefinition>;
+  release: () => void;
+}
+~~~
+
+### ViewSchemaLoader.PendingView
+
+[src/runtime/routing/ViewSchemaLoader.ts](../../src/runtime/routing/ViewSchemaLoader.ts)
+
+~~~typescript
+type PendingView = {
+  promise: Promise<ViewDefinition>;
+  controller: AbortController;
+  consumers: number;
+};
+~~~
+
+### FragmentRenderBoundary.Props
+
+[src/runtime/schema/FragmentRenderBoundary.tsx](../../src/runtime/schema/FragmentRenderBoundary.tsx)
+
+~~~typescript
+interface Props {
+  children: ReactNode;
+  fallback: ReactNode;
+  resetToken: unknown;
+  onError: (error: Error) => void;
+}
+~~~
+
 ### BindingEngine.ReactiveDefinition
 
 [src/runtime/binding/BindingEngine.ts](../../src/runtime/binding/BindingEngine.ts)
 
 ~~~typescript
-type ReactiveDefinition = Pick<ComponentDefinition, 'bindings' | 'visibility'>;
+type ReactiveDefinition = Pick<ComponentDefinition, "bindings" | "visibility">;
 ~~~
 
 ### ScopeActivation
@@ -2245,7 +2407,10 @@ type ReactiveDefinition = Pick<ComponentDefinition, 'bindings' | 'visibility'>;
 [src/runtime/rendering/RuntimeScopeHost.tsx](../../src/runtime/rendering/RuntimeScopeHost.tsx)
 
 ~~~typescript
-export interface ScopeActivation { scope: RuntimeScope; root: ComponentDefinition }
+export interface ScopeActivation {
+  scope: RuntimeScope;
+  root: ComponentDefinition;
+}
 ~~~
 
 ### ChildrenSourceDefinition
@@ -2254,7 +2419,12 @@ export interface ScopeActivation { scope: RuntimeScope; root: ComponentDefinitio
 
 ~~~typescript
 export interface ChildrenSourceDefinition {
-  request: { method?: 'GET' | 'POST'; path: string; query?: JsonObject; body?: JsonValue };
+  request: {
+    method?: "GET" | "POST";
+    path: string;
+    query?: JsonObject;
+    body?: JsonValue;
+  };
   /** Omit for {items: [...]}; use an empty string for a bare array. */
   itemsPath?: string;
 }
@@ -2317,15 +2487,13 @@ export interface TreeProjection {
 [src/runtime/data-tree/DataTreeRuntime.tsx](../../src/runtime/data-tree/DataTreeRuntime.tsx)
 
 ~~~typescript
-interface Props { component: string; items?: unknown; expandedIds?: string[]; error?: string | null; [prop: string]: unknown }
-~~~
-
-### FragmentRenderBoundary.Props
-
-[src/runtime/schema/FragmentRenderBoundary.tsx](../../src/runtime/schema/FragmentRenderBoundary.tsx)
-
-~~~typescript
-interface Props { children: ReactNode; fallback: ReactNode; resetToken: unknown; onError: (error: Error) => void }
+interface Props {
+  component: string;
+  items?: unknown;
+  expandedIds?: string[];
+  error?: string | null;
+  [prop: string]: unknown;
+}
 ~~~
 
 ### ButtonProps
@@ -2514,7 +2682,7 @@ export interface ReportSummary {
   title: string;
   description: string;
   module: string;
-  status: 'published' | 'draft';
+  status: "published" | "draft";
   updatedAt: string;
   frameworks?: string[];
   reportType?: string;
@@ -2542,7 +2710,14 @@ export interface ReportDetail extends ReportSummary {
 [src/contracts/reporting.ts](../../src/contracts/reporting.ts)
 
 ~~~typescript
-export interface ReportRunResult { id: string; reportId: string; status: 'completed'; completedAt: string; rowCount: number; message: string }
+export interface ReportRunResult {
+  id: string;
+  reportId: string;
+  status: "completed";
+  completedAt: string;
+  rowCount: number;
+  message: string;
+}
 ~~~
 
 ### ReportCardProps
@@ -2563,7 +2738,7 @@ export interface UserSummary {
   name: string;
   role: string;
   email: string;
-  status: 'active' | 'invited' | 'disabled';
+  status: "active" | "invited" | "disabled";
   initials?: string;
   department?: string;
   location?: string;
@@ -2592,9 +2767,17 @@ export interface ApplicationShellProps { children?: ReactNode; navigationCollaps
 
 ~~~typescript
 export interface ApplicationNavigationItem {
-  id: string; label: string; href?: string; icon?: string; depth?: number; disabled?: boolean;
-  key?: string; children?: ApplicationNavigationItem[]; expandable?: boolean;
-  childrenLoading?: boolean; childrenError?: string | null;
+  id: string;
+  label: string;
+  href?: string;
+  icon?: string;
+  depth?: number;
+  disabled?: boolean;
+  key?: string;
+  children?: ApplicationNavigationItem[];
+  expandable?: boolean;
+  childrenLoading?: boolean;
+  childrenError?: string | null;
 }
 ~~~
 
@@ -2603,7 +2786,11 @@ export interface ApplicationNavigationItem {
 [src/contracts/application.ts](../../src/contracts/application.ts)
 
 ~~~typescript
-export interface ApplicationUser { name: string; initials: string; role: string }
+export interface ApplicationUser {
+  name: string;
+  initials: string;
+  role: string;
+}
 ~~~
 
 ### ApplicationHeaderProps
@@ -2621,8 +2808,11 @@ export interface ApplicationHeaderProps {brand:string;breadcrumbs:string[];user?
 ~~~typescript
 export interface PrimaryNavigationProps {
   children?: ReactNode;
+  caption?: string;
+  footerText?: string;
   items: ApplicationNavigationItem[];
   selectedId?: string;
+  selectedHref?: string;
   expandedIds?: string[];
   loading?: boolean;
   error?: string | null;
@@ -2703,7 +2893,12 @@ export type ComponentSchemaType = keyof typeof sharedComponents;
 [src/runtime/shared/parseViewDefinition.ts](../../src/runtime/shared/parseViewDefinition.ts)
 
 ~~~typescript
-export interface SchemaIssue { stage: 'parse' | 'validation'; message: string; line?: number; column?: number }
+export interface SchemaIssue {
+  stage: "parse" | "validation";
+  message: string;
+  line?: number;
+  column?: number;
+}
 ~~~
 
 ### ViewDefinitionResult
@@ -2711,7 +2906,9 @@ export interface SchemaIssue { stage: 'parse' | 'validation'; message: string; l
 [src/runtime/shared/parseViewDefinition.ts](../../src/runtime/shared/parseViewDefinition.ts)
 
 ~~~typescript
-export type ViewDefinitionResult = { ok: true; definition: ViewDefinition } | { ok: false; issue: SchemaIssue };
+export type ViewDefinitionResult =
+  | { ok: true; definition: ViewDefinition }
+  | { ok: false; issue: SchemaIssue };
 ~~~
 
 ## Экспортируемые runtime функции
@@ -2766,54 +2963,24 @@ Own-property чтение; missing/intermediate null даёт undefined.
 (state: RuntimeState, address: ScopedChangedPath) => unknown
 ~~~
 
-### patchState
+### resolveRequestPath
 
-Поверхностно объединить root/target, без deep merge.
+Подставить request.params в {name}, encodeURIComponent значения сегмента.
 
-[src/runtime/redux/patchState.ts](../../src/runtime/redux/patchState.ts)
+[src/runtime/datasource/requestPolicy.ts](../../src/runtime/datasource/requestPolicy.ts)
 
 ~~~typescript
-(root: StateObject, patch: StatePatch) => StateObject
+(request: RequestDefinition) => string
 ~~~
 
-### getChangedPaths
+### validateRequestPath
 
-Сравнить snapshots и вернуть scope-qualified changes, включая init/dispose.
+Проверить нормализованный локальный URL и host allowedPathPrefixes; без оценки schema expressions.
 
-[src/runtime/redux/changedPaths.ts](../../src/runtime/redux/changedPaths.ts)
-
-~~~typescript
-(previous: RuntimeState, current: RuntimeState) => ScopedChangedPath[]
-~~~
-
-### createRuntimeListenerMiddleware
-
-Создать Redux listener, передающий changed paths/previous/current observer.
-
-[src/runtime/redux/listenerMiddleware.ts](../../src/runtime/redux/listenerMiddleware.ts)
+[src/runtime/datasource/requestPolicy.ts](../../src/runtime/datasource/requestPolicy.ts)
 
 ~~~typescript
-(observer?: RuntimeDependencyObserver | undefined) => ListenerMiddlewareInstance<RuntimeState, ThunkDispatch<RuntimeState, unknown, UnknownAction>, unknown>
-~~~
-
-### createRuntimeStore
-
-Собрать один guarded Redux store и listener для environment.
-
-[src/runtime/redux/createRuntimeStore.ts](../../src/runtime/redux/createRuntimeStore.ts)
-
-~~~typescript
-(observer?: RuntimeDependencyObserver | undefined) => { store: EnhancedStore<RuntimeState, UnknownAction, Tuple<[StoreEnhancer<{ dispatch: ((action: Action<"listenerMiddleware/add">) => UnsubscribeListener) & ThunkDispatch<RuntimeState, undefined, UnknownAction>; }>, StoreEnhancer]>>; listener: ListenerMiddlewareInstance<RuntimeState, ThunkDispatch<RuntimeState, unknown, UnknownAction>, unknown>; }
-~~~
-
-### diagnosticDetail
-
-Безопасно сериализовать значение для диагностического текста.
-
-[src/runtime/shared/Diagnostics.ts](../../src/runtime/shared/Diagnostics.ts)
-
-~~~typescript
-(value: unknown) => string | undefined
+(path: unknown, policy?: RequestPolicy) => asserts path is string
 ~~~
 
 ### assertLocalStateTarget
@@ -2838,12 +3005,22 @@ Own-property чтение; missing/intermediate null даёт undefined.
 
 ### validateRequest
 
-Проверить общий method/local path/query/params/body expression contract; не full security boundary.
+Проверить author declaration method/local path/query/params/body expressions; schemaExpressions допускает whole path/query binding. Host prefix policy применяется к resolved URL.
 
 [src/runtime/shared/validation.ts](../../src/runtime/shared/validation.ts)
 
 ~~~typescript
-(value: unknown) => void
+(value: unknown, schemaExpressions?: boolean) => void
+~~~
+
+### validateResolvedRequest
+
+Проверить method/path/query/params shape и host URL policy после resolve; значения query/body остаются буквальными данными.
+
+[src/runtime/shared/validation.ts](../../src/runtime/shared/validation.ts)
+
+~~~typescript
+(value: unknown, policy?: RequestPolicy) => void
 ~~~
 
 ### validateSchemaSource
@@ -2906,14 +3083,74 @@ Own-property чтение; missing/intermediate null даёт undefined.
 (value: unknown, scope: RuntimeScopeDefinition, registry: ComponentRegistry) => asserts value is ComponentDefinition
 ~~~
 
-### resolveRequestPath
+### resolveSchemaRequest
 
-Подставить request.params в {name}, encodeURIComponent значения сегмента.
+Разрешить object-template либо whole-request StateExpression в scope; GET/POST, query/body, строгие поля и host policy. Whole binding не интерпретируется повторно.
+
+[src/runtime/schema/resolveSchemaRequest.ts](../../src/runtime/schema/resolveSchemaRequest.ts)
+
+~~~typescript
+(source: SchemaRequestSource, resolver: ExpressionResolver, context: ExpressionContext, policy?: RequestPolicy) => RequestDefinition
+~~~
+
+### patchState
+
+Поверхностно объединить root/target, без deep merge.
+
+[src/runtime/redux/patchState.ts](../../src/runtime/redux/patchState.ts)
+
+~~~typescript
+(root: StateObject, patch: StatePatch) => StateObject
+~~~
+
+### getChangedPaths
+
+Сравнить snapshots и вернуть scope-qualified changes, включая init/dispose.
+
+[src/runtime/redux/changedPaths.ts](../../src/runtime/redux/changedPaths.ts)
+
+~~~typescript
+(previous: RuntimeState, current: RuntimeState) => ScopedChangedPath[]
+~~~
+
+### createRuntimeListenerMiddleware
+
+Создать Redux listener, передающий changed paths/previous/current observer.
+
+[src/runtime/redux/listenerMiddleware.ts](../../src/runtime/redux/listenerMiddleware.ts)
+
+~~~typescript
+(observer?: RuntimeDependencyObserver | undefined) => ListenerMiddlewareInstance<RuntimeState, ThunkDispatch<RuntimeState, unknown, UnknownAction>, unknown>
+~~~
+
+### createRuntimeStore
+
+Собрать один guarded Redux store и listener для environment.
+
+[src/runtime/redux/createRuntimeStore.ts](../../src/runtime/redux/createRuntimeStore.ts)
+
+~~~typescript
+(observer?: RuntimeDependencyObserver | undefined) => { store: EnhancedStore<RuntimeState, UnknownAction, Tuple<[StoreEnhancer<{ dispatch: ((action: Action<"listenerMiddleware/add">) => UnsubscribeListener) & ThunkDispatch<RuntimeState, undefined, UnknownAction>; }>, StoreEnhancer]>>; listener: ListenerMiddlewareInstance<RuntimeState, ThunkDispatch<RuntimeState, unknown, UnknownAction>, unknown>; }
+~~~
+
+### diagnosticDetail
+
+Безопасно сериализовать значение для диагностического текста.
+
+[src/runtime/shared/Diagnostics.ts](../../src/runtime/shared/Diagnostics.ts)
+
+~~~typescript
+(value: unknown) => string | undefined
+~~~
+
+### createFetchTransport
+
+Создать browser JSON transport с той же host URL policy, что используется runtime до вызова custom transport.
 
 [src/runtime/datasource/api.ts](../../src/runtime/datasource/api.ts)
 
 ~~~typescript
-(request: RequestDefinition) => string
+(policy?: RequestPolicy) => ApiTransport
 ~~~
 
 ### createActionRegistry
@@ -2933,7 +3170,7 @@ Own-property чтение; missing/intermediate null даёт undefined.
 [src/runtime/rendering/RuntimeScopeHost.tsx](../../src/runtime/rendering/RuntimeScopeHost.tsx)
 
 ~~~typescript
-({ create, registry, visible }: { create: () => ScopeActivation; registry: ComponentRegistry; visible?: boolean | undefined; }) => Element | null
+({ create, registry, visible, }: { create: () => ScopeActivation; registry: ComponentRegistry; visible?: boolean | undefined; }) => Element | null
 ~~~
 
 ### ViewRuntimeHost
@@ -2943,7 +3180,7 @@ Own-property чтение; missing/intermediate null даёт undefined.
 [src/runtime/view/ViewRuntimeHost.tsx](../../src/runtime/view/ViewRuntimeHost.tsx)
 
 ~~~typescript
-({ definition, environment, registry }: { definition: ViewDefinition; environment: RuntimeEnvironment; registry: ComponentRegistry; }) => Element
+({ definition, environment, registry, }: { definition: ViewDefinition; environment: RuntimeEnvironment; registry: ComponentRegistry; }) => Element
 ~~~
 
 ### RouteOutlet
@@ -2993,7 +3230,7 @@ Own-property чтение; missing/intermediate null даёт undefined.
 [src/runtime/data-tree/treeData.ts](../../src/runtime/data-tree/treeData.ts)
 
 ~~~typescript
-(items: TreeDataNode[], expandedIds: readonly string[], data: Record<string, DataEntry>, resolver: ExpressionResolver, context: ExpressionContext) => TreeProjection
+(items: TreeDataNode[], expandedIds: readonly string[], data: Record<string, DataEntry>, resolver: ExpressionResolver, context: ExpressionContext, policy?: RequestPolicy) => TreeProjection
 ~~~
 
 ### DataTreeRuntime
@@ -3053,7 +3290,7 @@ Own-property чтение; missing/intermediate null даёт undefined.
 [src/runtime/fragment/FragmentRuntimeHost.tsx](../../src/runtime/fragment/FragmentRuntimeHost.tsx)
 
 ~~~typescript
-({ definition, parent, registry, visible, origin }: { definition: NormalizedFragmentDefinition; parent: RuntimeScope; registry: ComponentRegistry; visible?: boolean | undefined; origin?: Readonly<ScopeOrigin> | undefined; }) => Element
+({ definition, parent, registry, visible, origin, }: { definition: NormalizedFragmentDefinition; parent: RuntimeScope; registry: ComponentRegistry; visible?: boolean | undefined; origin?: Readonly<ScopeOrigin> | undefined; }) => Element
 ~~~
 
 ### SchemaOutlet
@@ -3097,6 +3334,16 @@ JSON.parse + runtime View validation; вернуть discriminated result, не 
 ~~~
 
 ## Экспортируемые runtime значения и React contexts
+
+### defaultRequestPolicy
+
+Замороженная совместимая demo host policy: allowedPathPrefixes=["/api/"]. Не входит в JSON definition.
+
+[src/runtime/datasource/requestPolicy.ts](../../src/runtime/datasource/requestPolicy.ts)
+
+~~~typescript
+RequestPolicy
+~~~
 
 ### schemaFragmentSlice
 
@@ -3305,7 +3552,7 @@ React context routes/loader/environment/registry/revision.
 [src/runtime/routing/RouteOutlet.tsx](../../src/runtime/routing/RouteOutlet.tsx)
 
 ~~~typescript
-Context<{ routes: RouteDefinition[]; loader: ViewSchemaLoader; environment: RuntimeEnvironment; registry: ComponentRegistry; revision: number; } | null>
+Context<{ routes: RouteDefinition[]; viewSource?: ViewSourceDefinition | undefined; runtime: RuntimeScope; loader: ViewSchemaLoader; environment: RuntimeEnvironment; registry: ComponentRegistry; revision: number; } | null>
 ~~~
 
 ### ApplicationHost
@@ -3346,6 +3593,7 @@ NamedExoticComponent<{ definition: ApplicationDefinition; views: Record<string, 
 - [src/runtime/datasource/DependencyGraph.ts](../../src/runtime/datasource/DependencyGraph.ts)
 - [src/runtime/datasource/api.ts](../../src/runtime/datasource/api.ts)
 - [src/runtime/datasource/inlineRequest.ts](../../src/runtime/datasource/inlineRequest.ts)
+- [src/runtime/datasource/requestPolicy.ts](../../src/runtime/datasource/requestPolicy.ts)
 - [src/runtime/datasource/types.ts](../../src/runtime/datasource/types.ts)
 - [src/runtime/fragment/FragmentRuntime.ts](../../src/runtime/fragment/FragmentRuntime.ts)
 - [src/runtime/fragment/FragmentRuntimeHost.tsx](../../src/runtime/fragment/FragmentRuntimeHost.tsx)
@@ -3372,6 +3620,7 @@ NamedExoticComponent<{ definition: ApplicationDefinition; views: Record<string, 
 - [src/runtime/schema/FragmentRenderBoundary.tsx](../../src/runtime/schema/FragmentRenderBoundary.tsx)
 - [src/runtime/schema/SchemaFragmentManager.ts](../../src/runtime/schema/SchemaFragmentManager.ts)
 - [src/runtime/schema/SchemaOutlet.tsx](../../src/runtime/schema/SchemaOutlet.tsx)
+- [src/runtime/schema/resolveSchemaRequest.ts](../../src/runtime/schema/resolveSchemaRequest.ts)
 - [src/runtime/schema/schemaFragmentSlice.ts](../../src/runtime/schema/schemaFragmentSlice.ts)
 - [src/runtime/schema/types.ts](../../src/runtime/schema/types.ts)
 - [src/runtime/shared/Diagnostics.ts](../../src/runtime/shared/Diagnostics.ts)

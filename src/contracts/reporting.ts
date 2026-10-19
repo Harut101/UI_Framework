@@ -3,7 +3,7 @@ export interface ReportSummary {
   title: string;
   description: string;
   module: string;
-  status: 'published' | 'draft';
+  status: "published" | "draft";
   updatedAt: string;
   frameworks?: string[];
   reportType?: string;
@@ -17,4 +17,11 @@ export interface ReportDetail extends ReportSummary {
   controls: string[];
   lastRun: string | null;
 }
-export interface ReportRunResult { id: string; reportId: string; status: 'completed'; completedAt: string; rowCount: number; message: string }
+export interface ReportRunResult {
+  id: string;
+  reportId: string;
+  status: "completed";
+  completedAt: string;
+  rowCount: number;
+  message: string;
+}

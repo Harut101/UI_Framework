@@ -1,4 +1,22 @@
-import type {ComponentSchemaType} from '../../components/registry';
-export const implementations:Record<ComponentSchemaType,string>={
- button:'Button → Fluent Button', 'text-input':'TextInput → Field + Input', 'search-input':'SearchInput → Field + SearchBox', select:'Select → Field + Dropdown + Option', switch:'Switch → Fluent Switch', checkbox:'Checkbox → Fluent Checkbox', text:'Text → Fluent Text', title:'Title → Fluent Text with heading semantics', card:'Card → Fluent Card + CardHeader', stack:'Stack → Flexbox + Fluent tokens', row:'Row → Flexbox + Fluent tokens', page:'Page → Layout wrapper + Fluent tokens', 'page-header':'PageHeader → Fluent Text + layout', 'split-layout':'SplitLayout → CSS Grid + Fluent tokens', 'side-panel':'SidePanel → Fluent OverlayDrawer', 'generic-navigation':'GenericNavigation → Button + Badge + Text', 'generic-list':'GenericList → Button + Text + Spinner', 'report-card':'ReportCard → Card + Badge + Text + Button', 'user-card':'UserCard → Card + Avatar + Badge + Text + Button',
+import type { ComponentSchemaType } from "../../components/registry";
+export const implementations: Record<ComponentSchemaType, string> = {
+  button: "Button → Fluent Button",
+  "text-input": "TextInput → Field + Input",
+  "search-input": "SearchInput → Field + SearchBox",
+  select: "Select → Field + Dropdown + Option",
+  switch: "Switch → Fluent Switch",
+  checkbox: "Checkbox → Fluent Checkbox",
+  text: "Text → Fluent Text",
+  title: "Title → Fluent Text with heading semantics",
+  card: "Card → Fluent Card + CardHeader",
+  stack: "Stack → Flexbox + Fluent tokens",
+  row: "Row → Flexbox + Fluent tokens",
+  page: "Page → Layout wrapper + Fluent tokens",
+  "page-header": "PageHeader → Fluent Text + layout",
+  "split-layout": "SplitLayout → CSS Grid + Fluent tokens",
+  "side-panel": "SidePanel → Fluent OverlayDrawer",
+  "generic-navigation": "GenericNavigation → Button + Badge + Text",
+  "generic-list": "GenericList → Button + Text + Spinner",
+  "report-card": "ReportCard → Card + Badge + Text + Button",
+  "user-card": "UserCard → Card + Avatar + Badge + Text + Button",
 };

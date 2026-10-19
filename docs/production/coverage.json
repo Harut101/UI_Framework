@@ -38,8 +38,8 @@
     "user-list",
     "warning-banner"
   ],
-  "propertyAndApiMemberCount": 730,
-  "runtimeModuleCount": 66,
+  "propertyAndApiMemberCount": 751,
+  "runtimeModuleCount": 68,
   "runtimeModules": [
     "src/runtime/actions/ActionEngine.ts",
     "src/runtime/actions/ActionRegistry.ts",
@@ -67,6 +67,7 @@
     "src/runtime/datasource/DependencyGraph.ts",
     "src/runtime/datasource/api.ts",
     "src/runtime/datasource/inlineRequest.ts",
+    "src/runtime/datasource/requestPolicy.ts",
     "src/runtime/datasource/types.ts",
     "src/runtime/fragment/FragmentRuntime.ts",
     "src/runtime/fragment/FragmentRuntimeHost.tsx",
@@ -93,6 +94,7 @@
     "src/runtime/schema/FragmentRenderBoundary.tsx",
     "src/runtime/schema/SchemaFragmentManager.ts",
     "src/runtime/schema/SchemaOutlet.tsx",
+    "src/runtime/schema/resolveSchemaRequest.ts",
     "src/runtime/schema/schemaFragmentSlice.ts",
     "src/runtime/schema/types.ts",
     "src/runtime/shared/Diagnostics.ts",
@@ -524,6 +526,15 @@
       "optional": false
     },
     {
+      "key": "ApplicationDefinition.viewSource",
+      "file": "src/runtime/application/types.ts",
+      "owner": "ApplicationDefinition",
+      "member": "viewSource",
+      "kind": "contract",
+      "type": "ViewSourceDefinition",
+      "optional": true
+    },
+    {
       "key": "ApplicationHeaderProps.brand",
       "file": "src/components/application/ApplicationHeader.tsx",
       "owner": "ApplicationHeaderProps",
@@ -898,7 +909,7 @@
       "owner": "ChildrenSourceDefinition",
       "member": "request",
       "kind": "contract",
-      "type": "{ method?: 'GET' | 'POST'; path: string; query?: JsonObject; body?: JsonValue }",
+      "type": "{\n    method?: \"GET\" | \"POST\";\n    path: string;\n    query?: JsonObject;\n    body?: JsonValue;\n  }",
       "optional": false
     },
     {
@@ -916,7 +927,7 @@
       "owner": "ChildrenSourceDefinition.request",
       "member": "method",
       "kind": "contract",
-      "type": "'GET' | 'POST'",
+      "type": "\"GET\" | \"POST\"",
       "optional": true
     },
     {
@@ -1442,6 +1453,15 @@
       "optional": true
     },
     {
+      "key": "component:primary-navigation.caption",
+      "file": "src/components/application/PrimaryNavigation.tsx",
+      "owner": "component:primary-navigation",
+      "member": "caption",
+      "kind": "component",
+      "type": "string | undefined",
+      "optional": true
+    },
+    {
       "key": "component:primary-navigation.children",
       "file": "src/components/application/PrimaryNavigation.tsx",
       "owner": "component:primary-navigation",
@@ -1466,6 +1486,15 @@
       "member": "expandedIds",
       "kind": "component",
       "type": "string[] | undefined",
+      "optional": true
+    },
+    {
+      "key": "component:primary-navigation.footerText",
+      "file": "src/components/application/PrimaryNavigation.tsx",
+      "owner": "component:primary-navigation",
+      "member": "footerText",
+      "kind": "component",
+      "type": "string | undefined",
       "optional": true
     },
     {
@@ -1521,6 +1550,15 @@
       "kind": "component",
       "type": "(event: { value: string; href: string; }) => void",
       "optional": false
+    },
+    {
+      "key": "component:primary-navigation.selectedHref",
+      "file": "src/components/application/PrimaryNavigation.tsx",
+      "owner": "component:primary-navigation",
+      "member": "selectedHref",
+      "kind": "component",
+      "type": "string | undefined",
+      "optional": true
     },
     {
       "key": "component:primary-navigation.selectedId",
@@ -2383,7 +2421,7 @@
       "owner": "ComponentDefinition",
       "member": "key",
       "kind": "contract",
-      "type": "import('../shared/json').JsonValue",
+      "type": "import(\"../shared/json\").JsonValue",
       "optional": true
     },
     {
@@ -2392,7 +2430,7 @@
       "owner": "ComponentDefinition",
       "member": "lifecycle",
       "kind": "contract",
-      "type": "{ scopeLifetime?: import('../schema/types').FragmentScopeLifetime }",
+      "type": "{\n    scopeLifetime?: import(\"../schema/types\").FragmentScopeLifetime;\n  }",
       "optional": true
     },
     {
@@ -2401,7 +2439,7 @@
       "owner": "ComponentDefinition.lifecycle",
       "member": "scopeLifetime",
       "kind": "contract",
-      "type": "import('../schema/types').FragmentScopeLifetime",
+      "type": "import(\"../schema/types\").FragmentScopeLifetime",
       "optional": true
     },
     {
@@ -2428,7 +2466,7 @@
       "owner": "ComponentDefinition",
       "member": "source",
       "kind": "contract",
-      "type": "import('../schema/types').SchemaSource",
+      "type": "import(\"../schema/types\").SchemaSource",
       "optional": true
     },
     {
@@ -2761,7 +2799,7 @@
       "owner": "DataTreeRuntime.Props",
       "member": "[key]",
       "kind": "contract",
-      "type": "[prop: string]: unknown",
+      "type": "[prop: string]: unknown;",
       "optional": true
     },
     {
@@ -2851,7 +2889,7 @@
       "owner": "DependencyGraph",
       "member": "constructor",
       "kind": "api",
-      "type": "(definitions?: Record<string, DataSourceDefinition>, scope: Scope = 'view')",
+      "type": "(definitions?: Record<string, DataSourceDefinition>, scope: Scope = \"view\")",
       "optional": false
     },
     {
@@ -2986,7 +3024,7 @@
       "owner": "ExpressionContext",
       "member": "scope",
       "kind": "contract",
-      "type": "import('./RuntimeScope').RuntimeScope",
+      "type": "import(\"./RuntimeScope\").RuntimeScope",
       "optional": true
     },
     {
@@ -3067,7 +3105,7 @@
       "owner": "FragmentDataSourceDefinition",
       "member": "load",
       "kind": "contract",
-      "type": "Omit<DataSourceDefinition['load'], 'strategy'> & { strategy: 'onInit' | 'onScopeInit' | 'manual' }",
+      "type": "Omit<DataSourceDefinition[\"load\"], \"strategy\"> & {\n    strategy: \"onInit\" | \"onScopeInit\" | \"manual\";\n  }",
       "optional": false
     },
     {
@@ -3076,7 +3114,7 @@
       "owner": "FragmentDataSourceDefinition.load[2]",
       "member": "strategy",
       "kind": "contract",
-      "type": "'onInit' | 'onScopeInit' | 'manual'",
+      "type": "\"onInit\" | \"onScopeInit\" | \"manual\"",
       "optional": false
     },
     {
@@ -3139,7 +3177,7 @@
       "owner": "FragmentDefinition",
       "member": "type",
       "kind": "contract",
-      "type": "'fragment'",
+      "type": "\"fragment\"",
       "optional": false
     },
     {
@@ -3409,7 +3447,7 @@
       "owner": "InlineSchemaSource[1]",
       "member": "request",
       "kind": "contract",
-      "type": "SchemaRequestDefinition",
+      "type": "SchemaRequestSource",
       "optional": false
     },
     {
@@ -3580,7 +3618,7 @@
       "owner": "NormalizedFragmentDefinition",
       "member": "type",
       "kind": "contract",
-      "type": "'fragment'",
+      "type": "\"fragment\"",
       "optional": false
     },
     {
@@ -3598,7 +3636,7 @@
       "owner": "NormalizedLoadedFragment",
       "member": "scope",
       "kind": "contract",
-      "type": "'host' | 'fragment'",
+      "type": "\"host\" | \"fragment\"",
       "optional": false
     },
     {
@@ -3692,6 +3730,15 @@
       "optional": true
     },
     {
+      "key": "PrimaryNavigationProps.caption",
+      "file": "src/components/application/PrimaryNavigation.tsx",
+      "owner": "PrimaryNavigationProps",
+      "member": "caption",
+      "kind": "contract",
+      "type": "string",
+      "optional": true
+    },
+    {
       "key": "PrimaryNavigationProps.children",
       "file": "src/components/application/PrimaryNavigation.tsx",
       "owner": "PrimaryNavigationProps",
@@ -3716,6 +3763,15 @@
       "member": "expandedIds",
       "kind": "contract",
       "type": "string[]",
+      "optional": true
+    },
+    {
+      "key": "PrimaryNavigationProps.footerText",
+      "file": "src/components/application/PrimaryNavigation.tsx",
+      "owner": "PrimaryNavigationProps",
+      "member": "footerText",
+      "kind": "contract",
+      "type": "string",
       "optional": true
     },
     {
@@ -3807,6 +3863,15 @@
       "kind": "contract",
       "type": "string",
       "optional": false
+    },
+    {
+      "key": "PrimaryNavigationProps.selectedHref",
+      "file": "src/components/application/PrimaryNavigation.tsx",
+      "owner": "PrimaryNavigationProps",
+      "member": "selectedHref",
+      "kind": "contract",
+      "type": "string",
+      "optional": true
     },
     {
       "key": "PrimaryNavigationProps.selectedId",
@@ -4093,7 +4158,7 @@
       "owner": "ReportRunResult",
       "member": "status",
       "kind": "contract",
-      "type": "'completed'",
+      "type": "\"completed\"",
       "optional": false
     },
     {
@@ -4174,7 +4239,7 @@
       "owner": "ReportSummary",
       "member": "status",
       "kind": "contract",
-      "type": "'published' | 'draft'",
+      "type": "\"published\" | \"draft\"",
       "optional": false
     },
     {
@@ -4239,6 +4304,15 @@
       "kind": "contract",
       "type": "JsonObject",
       "optional": true
+    },
+    {
+      "key": "RequestPolicy.allowedPathPrefixes",
+      "file": "src/runtime/datasource/requestPolicy.ts",
+      "owner": "RequestPolicy",
+      "member": "allowedPathPrefixes",
+      "kind": "contract",
+      "type": "readonly string[]",
+      "optional": false
     },
     {
       "key": "RouteDefinition.path",
@@ -4345,7 +4419,7 @@
       "owner": "RuntimeEnvironment",
       "member": "constructor",
       "kind": "api",
-      "type": "(readonly navigate: (to: string) => void, readonly notify: (message: string, tone: 'success' | 'error' | 'info') => void, readonly transport: ApiTransport = fetchTransport)",
+      "type": "(readonly navigate: (to: string) => void, readonly notify: (\n      message: string,\n      tone: \"success\" | \"error\" | \"info\",\n    ) => void, transport?: ApiTransport, readonly requestPolicy: RequestPolicy = defaultRequestPolicy)",
       "optional": false
     },
     {
@@ -4408,7 +4482,7 @@
       "owner": "RuntimeEnvironment",
       "member": "notify",
       "kind": "api",
-      "type": "(message: string, tone: 'success' | 'error' | 'info') => void",
+      "type": "(\n      message: string,\n      tone: \"success\" | \"error\" | \"info\",\n    ) => void",
       "optional": false
     },
     {
@@ -4427,6 +4501,15 @@
       "member": "registerScope",
       "kind": "api",
       "type": "(scope: RuntimeScope, adoptParent: (parent: RuntimeScope) => void) => void",
+      "optional": false
+    },
+    {
+      "key": "RuntimeEnvironment.requestPolicy",
+      "file": "src/runtime/shared/RuntimeEnvironment.ts",
+      "owner": "RuntimeEnvironment",
+      "member": "requestPolicy",
+      "kind": "api",
+      "type": "RequestPolicy",
       "optional": false
     },
     {
@@ -4750,7 +4833,7 @@
       "owner": "RuntimeScopeDefinition",
       "member": "schemaSources",
       "kind": "contract",
-      "type": "Record<string, import('../schema/types').SchemaSourceDefinition>",
+      "type": "Record<\n    string,\n    import(\"../schema/types\").SchemaSourceDefinition\n  >",
       "optional": true
     },
     {
@@ -4786,7 +4869,7 @@
       "owner": "RuntimeState",
       "member": "fragments",
       "kind": "contract",
-      "type": "Record<string, { state: StateObject; data: Record<string, DataEntry> }>",
+      "type": "Record<\n    string,\n    { state: StateObject; data: Record<string, DataEntry> }\n  >",
       "optional": false
     },
     {
@@ -4795,7 +4878,7 @@
       "owner": "RuntimeState",
       "member": "schemaFragments",
       "kind": "contract",
-      "type": "import('../schema/types').SchemaFragmentState",
+      "type": "import(\"../schema/types\").SchemaFragmentState",
       "optional": false
     },
     {
@@ -4993,7 +5076,7 @@
       "owner": "SchemaFragmentEntry",
       "member": "status",
       "kind": "contract",
-      "type": "'loading' | 'success' | 'error'",
+      "type": "\"loading\" | \"success\" | \"error\"",
       "optional": false
     },
     {
@@ -5182,7 +5265,7 @@
       "owner": "SchemaIssue",
       "member": "stage",
       "kind": "contract",
-      "type": "'parse' | 'validation'",
+      "type": "\"parse\" | \"validation\"",
       "optional": false
     },
     {
@@ -5191,7 +5274,7 @@
       "owner": "SchemaOutletDefinition",
       "member": "enabled",
       "kind": "contract",
-      "type": "import('../shared/json').Expression | boolean",
+      "type": "import(\"../shared/json\").Expression | boolean",
       "optional": true
     },
     {
@@ -5200,7 +5283,7 @@
       "owner": "SchemaOutletDefinition",
       "member": "key",
       "kind": "contract",
-      "type": "FragmentKey | import('../shared/json').Expression",
+      "type": "FragmentKey | import(\"../shared/json\").Expression",
       "optional": true
     },
     {
@@ -5218,7 +5301,7 @@
       "owner": "SchemaOutletDefinition",
       "member": "type",
       "kind": "contract",
-      "type": "'schema-outlet'",
+      "type": "\"schema-outlet\"",
       "optional": false
     },
     {
@@ -5236,7 +5319,7 @@
       "owner": "SchemaRequestDefinition",
       "member": "method",
       "kind": "contract",
-      "type": "'GET' | 'POST'",
+      "type": "\"GET\" | \"POST\"",
       "optional": true
     },
     {
@@ -5254,7 +5337,7 @@
       "owner": "SchemaRequestDefinition",
       "member": "query",
       "kind": "contract",
-      "type": "JsonObject",
+      "type": "JsonObject | StateExpression",
       "optional": true
     },
     {
@@ -5263,7 +5346,7 @@
       "owner": "SchemaSourceDefinition",
       "member": "load",
       "kind": "contract",
-      "type": "{ strategy: 'onDemand' } & DefinitionCacheSelection",
+      "type": "{ strategy: \"onDemand\" } & DefinitionCacheSelection",
       "optional": false
     },
     {
@@ -5272,7 +5355,7 @@
       "owner": "SchemaSourceDefinition.load[1]",
       "member": "strategy",
       "kind": "contract",
-      "type": "'onDemand'",
+      "type": "\"onDemand\"",
       "optional": false
     },
     {
@@ -5281,7 +5364,7 @@
       "owner": "SchemaSourceDefinition",
       "member": "request",
       "kind": "contract",
-      "type": "SchemaRequestDefinition",
+      "type": "SchemaRequestSource",
       "optional": false
     },
     {
@@ -5380,7 +5463,7 @@
       "owner": "ScopeOrigin",
       "member": "definitionCache",
       "kind": "contract",
-      "type": "import('../schema/types').DefinitionCachePolicy",
+      "type": "import(\"../schema/types\").DefinitionCachePolicy",
       "optional": false
     },
     {
@@ -5389,7 +5472,7 @@
       "owner": "ScopeOrigin",
       "member": "key",
       "kind": "contract",
-      "type": "import('../schema/types').FragmentKey",
+      "type": "import(\"../schema/types\").FragmentKey",
       "optional": false
     },
     {
@@ -5407,7 +5490,7 @@
       "owner": "ScopeOrigin",
       "member": "scopeLifetime",
       "kind": "contract",
-      "type": "import('../schema/types').FragmentScopeLifetime",
+      "type": "import(\"../schema/types\").FragmentScopeLifetime",
       "optional": false
     },
     {
@@ -6158,6 +6241,24 @@
       "optional": true
     },
     {
+      "key": "TraceMetadata.viewSchema",
+      "file": "src/runtime/shared/json.ts",
+      "owner": "TraceMetadata",
+      "member": "viewSchema",
+      "kind": "contract",
+      "type": "{ pathname: string }",
+      "optional": true
+    },
+    {
+      "key": "TraceMetadata.viewSchema.pathname",
+      "file": "src/runtime/shared/json.ts",
+      "owner": "TraceMetadata.viewSchema",
+      "member": "pathname",
+      "kind": "contract",
+      "type": "string",
+      "optional": false
+    },
+    {
       "key": "TreeDataNode.childLinksSourceUrl",
       "file": "src/contracts/tree.ts",
       "owner": "TreeDataNode",
@@ -6586,7 +6687,7 @@
       "owner": "UserSummary",
       "member": "status",
       "kind": "contract",
-      "type": "'active' | 'invited' | 'disabled'",
+      "type": "\"active\" | \"invited\" | \"disabled\"",
       "optional": false
     },
     {
@@ -6662,6 +6763,33 @@
       "optional": false
     },
     {
+      "key": "ViewSchemaLease.promise",
+      "file": "src/runtime/routing/ViewSchemaLoader.ts",
+      "owner": "ViewSchemaLease",
+      "member": "promise",
+      "kind": "contract",
+      "type": "Promise<ViewDefinition>",
+      "optional": false
+    },
+    {
+      "key": "ViewSchemaLease.release",
+      "file": "src/runtime/routing/ViewSchemaLoader.ts",
+      "owner": "ViewSchemaLease",
+      "member": "release",
+      "kind": "contract",
+      "type": "() => void",
+      "optional": false
+    },
+    {
+      "key": "ViewSchemaLoader.acquire",
+      "file": "src/runtime/routing/ViewSchemaLoader.ts",
+      "owner": "ViewSchemaLoader",
+      "member": "acquire",
+      "kind": "api",
+      "type": "(pathname: string, source: ViewSourceDefinition, scope: RuntimeScope, registry: ComponentRegistry, generation?: number, preparedRequest?: RequestDefinition | undefined) => ViewSchemaLease",
+      "optional": false
+    },
+    {
       "key": "ViewSchemaLoader.constructor",
       "file": "src/runtime/routing/ViewSchemaLoader.ts",
       "owner": "ViewSchemaLoader",
@@ -6677,6 +6805,69 @@
       "member": "load",
       "kind": "api",
       "type": "(viewId: string) => ViewDefinition",
+      "optional": false
+    },
+    {
+      "key": "ViewSchemaLoader.PendingView.consumers",
+      "file": "src/runtime/routing/ViewSchemaLoader.ts",
+      "owner": "ViewSchemaLoader.PendingView",
+      "member": "consumers",
+      "kind": "contract",
+      "type": "number",
+      "optional": false
+    },
+    {
+      "key": "ViewSchemaLoader.PendingView.controller",
+      "file": "src/runtime/routing/ViewSchemaLoader.ts",
+      "owner": "ViewSchemaLoader.PendingView",
+      "member": "controller",
+      "kind": "contract",
+      "type": "AbortController",
+      "optional": false
+    },
+    {
+      "key": "ViewSchemaLoader.PendingView.promise",
+      "file": "src/runtime/routing/ViewSchemaLoader.ts",
+      "owner": "ViewSchemaLoader.PendingView",
+      "member": "promise",
+      "kind": "contract",
+      "type": "Promise<ViewDefinition>",
+      "optional": false
+    },
+    {
+      "key": "ViewSchemaLoader.prepare",
+      "file": "src/runtime/routing/ViewSchemaLoader.ts",
+      "owner": "ViewSchemaLoader",
+      "member": "prepare",
+      "kind": "api",
+      "type": "(pathname: string, source: ViewSourceDefinition, scope: RuntimeScope, state?: RuntimeState) => RequestDefinition",
+      "optional": false
+    },
+    {
+      "key": "ViewSourceDefinition.onLoaded",
+      "file": "src/runtime/routing/types.ts",
+      "owner": "ViewSourceDefinition",
+      "member": "onLoaded",
+      "kind": "contract",
+      "type": "string",
+      "optional": true
+    },
+    {
+      "key": "ViewSourceDefinition.pathQueryParam",
+      "file": "src/runtime/routing/types.ts",
+      "owner": "ViewSourceDefinition",
+      "member": "pathQueryParam",
+      "kind": "contract",
+      "type": "string",
+      "optional": true
+    },
+    {
+      "key": "ViewSourceDefinition.request",
+      "file": "src/runtime/routing/types.ts",
+      "owner": "ViewSourceDefinition",
+      "member": "request",
+      "kind": "contract",
+      "type": "SchemaRequestSource",
       "optional": false
     }
   ]

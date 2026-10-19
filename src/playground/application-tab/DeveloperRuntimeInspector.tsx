@@ -22,12 +22,13 @@ function EventLog({ entries, kind }: { entries: TraceEntry[]; kind: 'action' | '
     {!entries.length && <p className="inspector-empty">No {kind === 'action' ? 'actions' : kind === 'schema' ? 'schema events' : 'datasource events'} recorded yet.</p>}
     {entries.slice(0, 40).reverse().map(entry => <article key={entry.id} className={`inspector-event event-${entry.metadata?.event ?? entry.kind}`}>
       <div><time>{entry.time}</time><span>{entry.metadata?.scope ?? 'runtime'} · {entry.metadata?.instance ?? 'session'}</span></div>
-      <strong>{kind === 'action' ? entry.metadata?.actionId ?? entry.label : kind === 'schema' ? entry.metadata?.schemaResource?.source : entry.metadata?.datasourceId}</strong>
+      <strong>{kind === 'action' ? entry.metadata?.actionId ?? entry.label : kind === 'schema' ? entry.metadata?.schemaResource?.source ?? entry.metadata?.viewSchema?.pathname : entry.metadata?.datasourceId}</strong>
       <code>{kind === 'action' ? entry.metadata?.actionType ?? entry.detail : entry.metadata?.event}</code>
       {kind === 'action' && <small>{entry.metadata?.event ?? 'execute'}</small>}
       {entry.metadata?.target && <code className="inspector-target">{entry.metadata.target}</code>}
       {entry.metadata && Object.hasOwn(entry.metadata, 'value') && <pre>{formatInspectorValue(entry.metadata.value)}</pre>}
       {kind !== 'action' && entry.metadata?.request && <pre aria-label="Resolved request">{formatInspectorValue(entry.metadata.request)}</pre>}
+      {kind === 'schema' && entry.metadata?.viewSchema && <small>Remote ViewDefinition · browser pathname</small>}
       {kind === 'schema' && entry.metadata?.schemaResource && <small>Definition cache: {entry.metadata.schemaResource.cache} · Cache owner: {entry.metadata.schemaResource.owner} · Key: {formatInspectorValue(entry.metadata.schemaResource.key)}</small>}
       {kind !== 'action' && entry.detail && <small>{entry.detail}</small>}
       {entry.kind === 'error' && kind === 'action' && <small>{entry.detail}</small>}

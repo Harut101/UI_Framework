@@ -29,4 +29,3 @@ export function setPath(
   }
   current[parts.at(-1)!] = value;
 }
-

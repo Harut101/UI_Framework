@@ -1,7 +1,12 @@
-import type { JsonObject, JsonValue } from '../runtime/shared/json';
+import type { JsonObject, JsonValue } from "../runtime/shared/json";
 /** Guardian-compatible data contract. These objects describe links, never React nodes. */
 export interface ChildrenSourceDefinition {
-  request: { method?: 'GET' | 'POST'; path: string; query?: JsonObject; body?: JsonValue };
+  request: {
+    method?: "GET" | "POST";
+    path: string;
+    query?: JsonObject;
+    body?: JsonValue;
+  };
   /** Omit for {items: [...]}; use an empty string for a bare array. */
   itemsPath?: string;
 }

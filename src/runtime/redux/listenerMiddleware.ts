@@ -1,6 +1,6 @@
 import { createListenerMiddleware } from "@reduxjs/toolkit";
 import type { RuntimeState, ScopedChangedPath } from "../shared/types";
-import { getChangedPaths } from './changedPaths';
+import { getChangedPaths } from "./changedPaths";
 export type RuntimeDependencyObserver = (
   changedPaths: readonly ScopedChangedPath[],
   previous: RuntimeState,
@@ -21,4 +21,3 @@ export function createRuntimeListenerMiddleware(
   });
   return listener;
 }
-

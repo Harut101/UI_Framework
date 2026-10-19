@@ -223,8 +223,11 @@ Payload callbacks: точный тип выше; доступны как $event 
 | Поле/член | Тип / сигнатура | Optional | Default в реализации | Назначение |
 | --- | --- | --- | --- | --- |
 | <code>children</code> | <code>ReactNode</code> | Да | — | Упорядоченный дочерний контент/узлы. В JSON составляйте дерево через ComponentDefinition.children. |
+| <code>caption</code> | <code>string \| undefined</code> | Да | — | Необязательный заголовок navigation; приходит через props/bindings, без встроенного branding. |
+| <code>footerText</code> | <code>string \| undefined</code> | Да | — | Необязательный текст footer navigation от host/schema; компонент не вычисляет connection status. |
 | <code>items</code> | <code>ApplicationNavigationItem[]</code> | Нет | — | Массив элементов известного компонента/проекции. Data shape задаётся контрактом items, не runtime. |
 | <code>selectedId</code> | <code>string \| undefined</code> | Да | — | Контролируемый идентификатор выделения; компонент не изменяет state самостоятельно. |
+| <code>selectedHref</code> | <code>string \| undefined</code> | Да | — | Контролируемый URL выбранного navigation item. Непустое значение имеет приоритет над selectedId, включая Back/Forward. |
 | <code>expandedIds</code> | <code>string[] \| undefined</code> | Да | <code>[]</code> | Контролируемые канонические tree keys раскрытых узлов. |
 | <code>loading</code> | <code>boolean \| undefined</code> | Да | <code>false</code> | Флаг загрузки либо fallback-дерево SchemaOutlet; не подменяет lifecycle status. |
 | <code>error</code> | <code>string \| null \| undefined</code> | Да | — | Текст ошибки/null, ошибка parser либо fallback-дерево — точная форма в типе. |

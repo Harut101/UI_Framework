@@ -8,7 +8,7 @@ Tab 3 is a host for a separate ApplicationRuntime session. It supplies the envir
 - src/schemas/views/reporting.catalog.json defines the entire catalog tree, filters, visibility, named actions, requests, and dependency policy.
 - src/schemas/reporting.ts bundles and validates these JSON definitions. It does not implement business behavior.
 
-The application shell is application-shell → application-header + data-tree (targeting primary-navigation) + route-outlet. The generic data adapter loads and merges child link data; all navigation parent definitions come from the backend. See [dynamic-navigation.md](dynamic-navigation.md). RouteOutlet loads reporting.catalog through the normal ViewSchemaLoader/ViewRuntime path. The header and primary navigation bind only app namespaces. The catalog owns view namespaces. Leaving Tab 3 disposes that session; the playground's other tabs have their own session.
+The application shell is application-shell → application-header + data-tree (targeting primary-navigation) + route-outlet. The generic data adapter loads and merges child link data; all navigation parent definitions come from the backend. See [dynamic-navigation.md](dynamic-navigation.md). RouteOutlet resolves the browser pathname through application.viewSource, fetches a full ViewDefinition from /api/ui/views and activates the normal ViewRuntime. Primary navigation supplies different hrefs for Reports, Users, tenants, domains and recovery pages. See [remote View routing](production/remote-view-routing.md). The header and primary navigation bind only app namespaces. The catalog owns view namespaces. Leaving Tab 3 disposes that session; the playground's other tabs have their own session.
 
 ## Dataflow
 
@@ -64,3 +64,8 @@ The Demo Schema selector and side-by-side JSON comparison now let the same appli
 ## Dynamic fragment workbench
 
 Both catalog views include a schema-generated wide SidePanel hosting two independent remote items fragments and nested notes. GET /api/ui/fragments/items-panel/:contextId supplies the complete local state/data/action/root contract; GET /api/ui/fragments/item-note/:itemId supplies a selected child fragment. Existing Microsoft 365 and Active Directory legacy trees remain distinct. See [full-fragment-demo.md](full-fragment-demo.md) for the complete flow and manual walkthrough.
+
+
+## Action-selected dynamic panels
+
+Reports and Users share one schema-outlet driven by panel.open/schemaId/request. Each initiating action supplies a full endpoint path and query object. New user uses /api/ui/users/create; report actions use /api/ui/reports/run; Microsoft 365/Active Directory use /api/ui/object-panels. The outlet binds the complete request from state, including GET/POST and body and has no fixed endpoint. The remote content is a self-contained FragmentDefinition with local state/actions. Legacy endpoints remain compatible. See [dynamic panel contract](production/dynamic-panels.md).

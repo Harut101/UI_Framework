@@ -29,3 +29,19 @@
 .items-fragment .ui-card-body { display:grid; gap:12px; }
 .items-fragment .ui-list-name > span { display:block; font-size:12px; }
 .items-fragment .ui-list-meta { max-width:120px; overflow-wrap:anywhere; font-size:11px; }
+
+.remote-navigation-view { padding: 24px; min-width: 0; }
+
+/* A destination may also expose children: keep its link and expansion separate. */
+.application-nav-row { display:flex; align-items:stretch; }
+.application-nav-row > .application-nav-link {
+  flex:1; min-width:0; display:flex; justify-content:flex-start; gap:10px;
+  min-height:42px; height:auto; text-align:left; white-space:normal;
+  border-radius:0; padding:10px 15px; color:var(--navigation-text-muted);
+}
+.application-nav-row > .application-nav-link > span:not(.fui-Button__icon) { flex:1; }
+.application-nav-row > .application-nav-link.selected { background:var(--navigation-selected); color:var(--text-inverse); }
+.application-nav-row > .application-nav-link:not(:disabled):hover,
+.application-nav-expand:not(:disabled):hover { background:var(--navigation-hover); color:var(--text-inverse); }
+.application-nav-row > .application-nav-link:disabled { color:var(--navigation-text-muted); opacity:.8; }
+.application-nav-expand { min-width:32px; border-radius:0; color:var(--navigation-text-muted); }

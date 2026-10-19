@@ -1,8 +1,11 @@
 import type { TraceEntry, TraceMetadata } from "../shared/types";
 
 export function diagnosticDetail(value: unknown): string | undefined {
-  try { return JSON.stringify(value); }
-  catch { return '[Unserializable diagnostic value]'; }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "[Unserializable diagnostic value]";
+  }
 }
 
 export class Diagnostics {
@@ -18,14 +21,26 @@ export class Diagnostics {
   snapshot = () => this.entries;
   private notify() {
     for (const listener of this.listeners) {
-      try { listener(); } catch { /* Diagnostic observers must not interrupt runtime execution. */ }
+      try {
+        listener();
+      } catch {
+        /* Diagnostic observers must not interrupt runtime execution. */
+      }
     }
   }
-  trace(kind: TraceEntry["kind"], label: string, detail?: string, metadata?: TraceMetadata) {
+  trace(
+    kind: TraceEntry["kind"],
+    label: string,
+    detail?: string,
+    metadata?: TraceMetadata,
+  ) {
     let snapshot: TraceMetadata | undefined;
     if (metadata) {
-      try { snapshot = structuredClone(metadata); }
-      catch { snapshot = { ...metadata, value: '[Unserializable diagnostic value]' }; }
+      try {
+        snapshot = structuredClone(metadata);
+      } catch {
+        snapshot = { ...metadata, value: "[Unserializable diagnostic value]" };
+      }
     }
     this.entries = [
       {
